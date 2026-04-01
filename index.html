@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Volt Money — Technical Documentation Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #060810;
+    --bg2:     #0a0d18;
+    --card:    #0d1020;
+    --border:  #1a2040;
+
+    /* LMS palette — cyan */
+    --lms:     #22d3ee;
+    --lms2:    #0ea5e9;
+    --lms-dim: rgba(34,211,238,0.08);
+
+    /* LOS palette — indigo */
+    --los:     #4f6ef7;
+    --los2:    #7c3aed;
+    --los-dim: rgba(79,110,247,0.08);
+
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --muted2:  #94a3b8;
+    --gold:    #f59e0b;
+
+    --font: 'Sora', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.35;
+  }
+
+  /* ── GRID BG ── */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+  }
+
+  /* ── AMBIENT ORBS ── */
+  .orb {
+    position: fixed; border-radius: 50%; filter: blur(90px);
+    pointer-events: none; z-index: 0; opacity: 0.12;
+    animation: drift 12s ease-in-out infinite;
+  }
+  .orb-lms { width: 500px; height: 500px; background: var(--lms); top: -10%; left: -10%; animation-delay: 0s; }
+  .orb-los { width: 450px; height: 450px; background: var(--los2); bottom: -10%; right: -10%; animation-delay: 6s; }
+  .orb-mid { width: 250px; height: 250px; background: var(--gold); top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: 3s; opacity: 0.05; }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%       { transform: translate(30px, -20px) scale(1.05); }
+    66%       { transform: translate(-20px, 25px) scale(0.97); }
+  }
+
+  /* ── LAYOUT ── */
+  .page {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 0 1.5rem;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    width: 100%; max-width: 1100px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.8rem 0 1.2rem;
+    border-bottom: 1px solid var(--border);
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 0.65rem;
+    text-decoration: none;
+  }
+  .logo-svg {
+    height: 22px; width: auto;
+    display: block;
+    opacity: 0.9;
+    transition: opacity 0.2s;
+  }
+  .logo:hover .logo-svg { opacity: 1; }
+
+  .topbar-tag {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 20px;
+    padding: 0.25rem 0.8rem; letter-spacing: 0.08em;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    width: 100%; max-width: 760px;
+    text-align: center;
+    padding: 5rem 0 3.5rem;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 20px; padding: 0.3rem 1rem;
+    margin-bottom: 1.8rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 8px var(--gold);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+  }
+  .hero-title span {
+    background: linear-gradient(90deg, var(--lms) 0%, var(--los) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.05rem; color: var(--muted2); font-weight: 300;
+    max-width: 520px; margin: 0 auto;
+    line-height: 1.8;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%; max-width: 1100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin-bottom: 3.5rem;
+  }
+
+  /* ── CARDS ── */
+  .cards {
+    width: 100%; max-width: 1100px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    animation: fadeUp 0.8s ease 0.25s both;
+  }
+
+  @media (max-width: 700px) {
+    .cards { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    position: relative;
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    text-decoration: none;
+    display: flex; flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+  }
+
+  .card-lms:hover {
+    border-color: rgba(34,211,238,0.35);
+    box-shadow: 0 20px 60px rgba(34,211,238,0.1), 0 0 0 1px rgba(34,211,238,0.1);
+  }
+  .card-los:hover {
+    border-color: rgba(79,110,247,0.35);
+    box-shadow: 0 20px 60px rgba(79,110,247,0.12), 0 0 0 1px rgba(79,110,247,0.1);
+  }
+
+  /* card glow strip at top */
+  .card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+    transition: opacity 0.3s;
+    opacity: 0;
+  }
+  .card-lms::after { background: linear-gradient(90deg, transparent, var(--lms), transparent); }
+  .card-los::after { background: linear-gradient(90deg, transparent, var(--los), transparent); }
+  .card:hover::after { opacity: 1; }
+
+  /* card inner glow */
+  .card-glow {
+    position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px; border-radius: 50%;
+    filter: blur(70px); opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .card-lms .card-glow { background: var(--lms); }
+  .card-los .card-glow { background: var(--los); }
+  .card:hover .card-glow { opacity: 0.06; }
+
+  .card-body {
+    position: relative; z-index: 1;
+    padding: 2rem 2rem 1.4rem;
+    flex: 1;
+  }
+
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 1.4rem;
+    transition: transform 0.3s ease;
+  }
+  .card:hover .card-icon { transform: scale(1.08); }
+  .card-lms .card-icon { background: var(--lms-dim); border: 1px solid rgba(34,211,238,0.2); }
+  .card-los .card-icon { background: var(--los-dim); border: 1px solid rgba(79,110,247,0.2); }
+
+  .card-tag {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 0.6rem; display: block;
+  }
+  .card-lms .card-tag { color: var(--lms); }
+  .card-los .card-tag { color: var(--los); }
+
+  .card-title {
+    font-size: 1.5rem; font-weight: 700;
+    letter-spacing: -0.02em; line-height: 1.2;
+    color: var(--text); margin-bottom: 0.8rem;
+  }
+
+  .card-desc {
+    font-size: 0.88rem; color: var(--muted2);
+    line-height: 1.7; font-weight: 300;
+  }
+
+  .card-features {
+    position: relative; z-index: 1;
+    padding: 1.2rem 2rem;
+    border-top: 1px solid var(--border);
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+
+  .feat-pill {
+    font-family: var(--mono); font-size: 10px; font-weight: 500;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0.7rem; border-radius: 20px;
+    transition: transform 0.2s;
+  }
+  .feat-pill:hover { transform: scale(1.05); }
+  .card-lms .feat-pill { background: rgba(34,211,238,0.08); color: var(--lms); border: 1px solid rgba(34,211,238,0.15); }
+  .card-los .feat-pill { background: rgba(79,110,247,0.08); color: var(--los); border: 1px solid rgba(79,110,247,0.15); }
+
+  .card-footer {
+    position: relative; z-index: 1;
+    padding: 1rem 2rem 1.6rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .card-cta {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-size: 13px; font-weight: 600; letter-spacing: 0.01em;
+    transition: gap 0.25s ease;
+  }
+  .card:hover .card-cta { gap: 0.8rem; }
+  .card-lms .card-cta { color: var(--lms); }
+  .card-los .card-cta { color: var(--los); }
+
+  .card-cta-arrow {
+    font-size: 16px; transition: transform 0.25s ease;
+  }
+  .card:hover .card-cta-arrow { transform: translateX(3px); }
+
+  .card-version {
+    font-family: var(--mono); font-size: 10px;
+    color: var(--muted); letter-spacing: 0.05em;
+  }
+
+  /* ── BOTTOM META ── */
+  .meta {
+    width: 100%; max-width: 1100px;
+    margin: 3rem 0 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+
+  .meta-left {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .meta-left span { color: var(--muted2); }
+
+  .meta-links {
+    display: flex; gap: 1.5rem;
+  }
+  .meta-links a {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    text-decoration: none; letter-spacing: 0.06em;
+    transition: color 0.2s;
+  }
+  .meta-links a:hover { color: var(--text); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="orb orb-lms"></div>
+<div class="orb orb-los"></div>
+<div class="orb orb-mid"></div>
+
+<div class="page">
+
+  <!-- TOPBAR -->
+  <nav class="topbar">
+    <a href="#" class="logo">
+      <img class="logo-svg" src="./VoltBlue.svg" alt="Volt Money">
+    </a>
+    <span class="topbar-tag">TECHNICAL DOCS</span>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Documentation Hub</div>
+    <h1 class="hero-title">
+      Engineering<br><span>Reference Guides</span>
+    </h1>
+    <p class="hero-sub">
+      Interactive technical documentation for Volt Money's core lending infrastructure — Loan Management System and Loan Origination System.
+    </p>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CARDS -->
+  <div class="cards">
+
+    <!-- LMS -->
+    <a href="LMS_Interactive_Guide.html" class="card card-lms">
+      <div class="card-glow"></div>
+      <div class="card-body">
+        <div class="card-icon">⚙️</div>
+        <span class="card-tag">LMS · Loan Management System</span>
+        <h2 class="card-title">LMS Technical Guide</h2>
+        <p class="card-desc">
+          Deep-dive into the Loan Management System architecture — EMI schedules, repayment flows, prepayment logic, NPA classification, and ledger reconciliation.
+        </p>
+      </div>
+      <div class="card-features">
+        <span class="feat-pill">Repayment Engine</span>
+        <span class="feat-pill">EMI Calculator</span>
+        <span class="feat-pill">Foreclosure</span>
+        <span class="feat-pill">NPA Lifecycle</span>
+        <span class="feat-pill">Ledger APIs</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">
+          Open Guide
+          <span class="card-cta-arrow">→</span>
+        </span>
+        <span class="card-version">v1.0 · Interactive</span>
+      </div>
+    </a>
+
+    <!-- LOS -->
+    <a href="LOS_Interactive_Guide.html" class="card card-los">
+      <div class="card-glow"></div>
+      <div class="card-body">
+        <div class="card-icon">🔐</div>
+        <span class="card-tag">LOS · Loan Origination System</span>
+        <h2 class="card-title">LOS Technical Guide</h2>
+        <p class="card-desc">
+          End-to-end origination pipeline documentation — KYC orchestration, credit bureau integration, underwriting rules, sanction workflows, and disbursement triggers.
+        </p>
+      </div>
+      <div class="card-features">
+        <span class="feat-pill">KYC / KYB</span>
+        <span class="feat-pill">Bureau Pull</span>
+        <span class="feat-pill">Underwriting</span>
+        <span class="feat-pill">Sanction Flow</span>
+        <span class="feat-pill">Disbursement</span>
+      </div>
+      <div class="card-footer">
+        <span class="card-cta">
+          Open Guide
+          <span class="card-cta-arrow">→</span>
+        </span>
+        <span class="card-version">v1.0 · Interactive</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- META -->
+  <footer class="meta">
+    <div class="meta-left">
+      VOLT MONEY ENGINEERING &nbsp;·&nbsp; <span>Internal Use Only</span>
+    </div>
+    <nav class="meta-links">
+      <a href="LMS_Interactive_Guide.html">LMS Docs</a>
+      <a href="LOS_Interactive_Guide.html">LOS Docs</a>
+    </nav>
+  </footer>
+
+</div>
+</body>
+</html>

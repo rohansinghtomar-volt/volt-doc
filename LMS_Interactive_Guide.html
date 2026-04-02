@@ -1237,7 +1237,7 @@
               fill="#475569"
               font-size="9"
             >
-              6:30 AM Daily
+              6:30 AM and 7:30 AM Daily
             </text>
 
             <!-- Shortfall loop back arrow (sell-off) -->
@@ -1489,7 +1489,7 @@
             </div>
           </div>
           <div class="schedule-row">
-            <div class="schedule-time">6:30 AM</div>
+            <div class="schedule-time">7:30 AM</div>
             <div class="schedule-body">
               <h4>Shortfall Check</h4>
               <p>
@@ -1605,7 +1605,9 @@
               § 2.3 Sell-off Collateral
             </h3>
             <p style="font-size: 13px; color: var(--muted2)">
-              When collateral value reduces due to market fluctuations, DP
+              When collateral value reduces due to market fluctuations,
+              customer voluntarily asks the funds to be sold-off, when 
+              the funds are marked as risky by the risk management team, DP
               reduces. If DP falls below POS, account enters shortfall. If
               unresolved within 7 days, collateral is liquidated. Normally
               <strong style="color: var(--text)">2× the shortfall value</strong>
@@ -1619,7 +1621,7 @@
         <div class="formula-box">
           DP = Σ ( Units × NAV × LTV ) for each collateral folio
           <div class="formula-note">
-            NAV refreshed daily at 4:00 AM &nbsp;|&nbsp; Shortfall check at 6:30
+            NAV refreshed daily at 4:00 AM &nbsp;|&nbsp; Shortfall check at 7:30
             AM &nbsp;|&nbsp; Default LTV: 45% (higher for Equity &amp; Debt
             funds)
           </div>
@@ -1707,8 +1709,8 @@
                     <td class="step-num-cell">6</td>
                     <td style="font-weight: 600">POS Update</td>
                     <td>
-                      POS is incremented by the disbursed principal amount.
                       Transactions and charges are posted.
+                      Resulting in increase of POS.
                     </td>
                     <td><span class="actor-tag at-system">LMS</span></td>
                   </tr>
@@ -2476,7 +2478,9 @@
                 <strong>2× the shortfall amount</strong> — not just the
                 shortfall itself — to create a buffer against further NAV
                 decline and against DP reducing due to the sell-off itself. Post
-                sell-off, POS is reduced and DP is recalculated.
+                sell-off, POS is reduced and DP is recalculated. Any accrued interest
+                and charges are also added to the sell-off amount. Any excess funds are
+                credited back to the customer's account.
               </div>
             </div>
           </div>
@@ -2691,7 +2695,10 @@
                 <div class="state-condition">POS > DP</div>
                 <div class="state-desc">
                   Customers have up to 6 days to repay the excess. New
-                  disbursements blocked.
+                  disbursements blocked. In this time period if the market
+                  recovers, the shorfall amount changes accordingly and at 
+                  any point if the DP becomes greater than POS, Customer comes out 
+                  of shortfall and the shortfall state is reset.
                 </div>
               </div>
               <div class="state-card state-selloff">
@@ -2700,7 +2707,7 @@
                 </div>
                 <div class="state-condition">Day 7, unresolved</div>
                 <div class="state-desc">
-                  System automatically liquidates 2× shortfall in collateral
+                  System automatically liquidates 2× shortfall + charges + interest in collateral
                   units.
                 </div>
               </div>
@@ -2916,7 +2923,7 @@
                 <td class="step-num-cell">6</td>
                 <td style="font-weight: 600">Shortfall Check</td>
                 <td>
-                  If NAV falls and POS &gt; DP, shortfall detected at 6:30 AM.
+                  If NAV falls and POS &gt; DP, shortfall detected at 7:30 AM.
                 </td>
                 <td><span class="actor-tag at-system">System</span></td>
               </tr>

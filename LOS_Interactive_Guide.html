@@ -1,1121 +1,2127 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Volt Money — LOS Technical Documentation</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #07080f;
-    --bg2: #0d0f1c;
-    --bg3: #131629;
-    --card: #0f1120;
-    --border: #1e2340;
-    --accent: #4f6ef7;
-    --accent2: #7c3aed;
-    --accent3: #06d6a0;
-    --gold: #f59e0b;
-    --text: #e8eaf6;
-    --muted: #6b7280;
-    --muted2: #9ca3af;
-    --danger: #ef4444;
-    --font: 'Sora', sans-serif;
-    --mono: 'JetBrains Mono', monospace;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 15px;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
-
-  /* NOISE OVERLAY */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
-  /* HERO */
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    overflow: hidden;
-    padding: 4rem 2rem;
-  }
-
-  .hero-bg {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(79,110,247,0.15) 0%, transparent 70%),
-                radial-gradient(ellipse 50% 50% at 80% 80%, rgba(124,58,237,0.1) 0%, transparent 60%),
-                radial-gradient(ellipse 40% 40% at 20% 70%, rgba(6,214,160,0.07) 0%, transparent 60%);
-  }
-
-  .hero-grid {
-    position: absolute; inset: 0;
-    background-image:
-      linear-gradient(rgba(79,110,247,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(79,110,247,0.06) 1px, transparent 1px);
-    background-size: 48px 48px;
-  }
-
-  .hero-content { position: relative; z-index: 1; max-width: 800px; }
-
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(79,110,247,0.12);
-    border: 1px solid rgba(79,110,247,0.3);
-    color: #818cf8;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 100px;
-    margin-bottom: 2rem;
-    animation: fadeUp 0.6s ease both;
-  }
-
-  .badge-dot {
-    width: 6px; height: 6px;
-    background: var(--accent3);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(0.8); }
-  }
-
-  .hero h1 {
-    font-size: clamp(2.4rem, 6vw, 4.5rem);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-
-  .hero h1 span {
-    background: linear-gradient(135deg, #4f6ef7, #7c3aed, #06d6a0);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .hero p {
-    margin-top: 1.5rem;
-    font-size: 1.1rem;
-    color: var(--muted2);
-    max-width: 520px;
-    margin-left: auto; margin-right: auto;
-    animation: fadeUp 0.6s 0.2s ease both;
-  }
-
-  .hero-meta {
-    display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
-    margin-top: 2.5rem;
-    animation: fadeUp 0.6s 0.3s ease both;
-  }
-
-  .hero-meta-item {
-    text-align: center;
-  }
-
-  .hero-meta-item .label {
-    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
-  }
-
-  .hero-meta-item .value {
-    font-size: 13px; font-weight: 600; color: var(--muted2);
-    font-family: var(--mono);
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* SCROLL INDICATOR */
-  .scroll-hint {
-    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    color: var(--muted);
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    animation: fadeUp 0.6s 0.8s ease both;
-  }
-
-  .scroll-hint svg { animation: bounce 2s infinite; }
-
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(6px); }
-  }
-
-  /* MAIN LAYOUT */
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 2rem;
-  }
-
-  /* NAV */
-  .nav {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(7, 8, 15, 0.5);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 2rem;
-    border-radius: 0 0 25px 25px;
-  }
-
-  .nav-inner {
-    max-width: 1100px; margin: 0 auto;
-    display: flex; align-items: center; gap: 0;
-    overflow-x: auto;
-  }
-
-  .nav-logo {
-    font-weight: 700; font-size: 14px; color: var(--text);
-    padding: 1rem 1.5rem 1rem 0;
-    border-right: 1px solid var(--border);
-    margin-right: 1rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .nav-logo img {
-    display: block;
-    height: 24px;
-    width: auto;
-  }
-
-  .nav-logo span { color: var(--accent); }
-
-  .nav-link {
-    padding: 1rem 0.9rem;
-    font-size: 12px; font-weight: 500; color: var(--muted);
-    text-decoration: none; white-space: nowrap;
-    transition: color 0.2s;
-    letter-spacing: 0.02em;
-  }
-
-  .nav-link:hover { color: var(--text); }
-
-  /* SECTIONS */
-  section {
-    padding: 5rem 0;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-  }
-
-  .section-header {
-    margin-bottom: 3rem;
-  }
-
-  .section-tag {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 0.75rem;
-    display: block;
-  }
-
-  h2 {
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    margin-bottom: 0.75rem;
-  }
-
-  .section-desc {
-    margin-top: 0.75rem;
-    color: var(--muted2);
-    max-width: 600px;
-  }
-
-  /* CARDS */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-
-  .card:hover {
-    border-color: rgba(79,110,247,0.3);
-    transform: translateY(-2px);
-  }
-
-  /* GRID LAYOUTS */
-  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-  .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; }
-  .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-
-  /* TABLE */
-  .table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13.5px;
-  }
-
-  thead th {
-    background: var(--bg3);
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 600;
-    border-bottom: 1px solid var(--border);
-  }
-
-  tbody td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-
-  tbody tr:last-child td { border-bottom: none; }
-
-  tbody tr:hover td { background: rgba(79,110,247,0.04); }
-
-  td:first-child {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent);
-    white-space: nowrap;
-  }
-
-  /* FLOW DIAGRAM */
-  .flow-container {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2.5rem;
-    overflow-x: auto;
-  }
-
-  /* STEP FLOW */
-  .step-flow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    position: relative;
-  }
-
-  .step-item {
-    display: flex;
-    gap: 1.5rem;
-    position: relative;
-  }
-
-  .step-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-    width: 48px;
-  }
-
-  .step-num {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
-    font-family: var(--mono);
-    flex-shrink: 0;
-    position: relative;
-    z-index: 1;
-  }
-
-  .step-line {
-    flex: 1;
-    width: 2px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-
-  .step-item:last-child .step-line { display: none; }
-
-  .step-body {
-    padding: 0 0 2rem 0;
-    flex: 1;
-  }
-
-  .step-title {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 4px;
-  }
-
-  .step-desc {
-    font-size: 13.5px;
-    color: var(--muted2);
-    line-height: 1.6;
-  }
-
-  /* COLOR VARIANTS FOR STEPS */
-  .s1 .step-num { background: rgba(79,110,247,0.15); color: #818cf8; border: 1px solid rgba(79,110,247,0.3); }
-  .s2 .step-num { background: rgba(6,214,160,0.12); color: var(--accent3); border: 1px solid rgba(6,214,160,0.25); }
-  .s3 .step-num { background: rgba(245,158,11,0.12); color: var(--gold); border: 1px solid rgba(245,158,11,0.25); }
-  .s4 .step-num { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
-  .s5 .step-num { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
-
-  /* IDENTITY CARDS */
-  .id-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-  }
-
-  .id-key {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-
-  .id-source {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 100px;
-    margin-bottom: 6px;
-  }
-
-  .source-dsp { background: rgba(79,110,247,0.15); color: #818cf8; }
-  .source-vm { background: rgba(6,214,160,0.12); color: var(--accent3); }
-
-  .id-desc { font-size: 13px; color: var(--muted2); }
-
-  /* MANDATE CARDS */
-  .mandate-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .mandate-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 3px;
-  }
-
-  .m1::before { background: linear-gradient(90deg, #4f6ef7, #7c3aed); }
-  .m2::before { background: linear-gradient(90deg, #06d6a0, #0ea5e9); }
-  .m3::before { background: linear-gradient(90deg, #f59e0b, #f97316); }
-  .m4::before { background: linear-gradient(90deg, #6b7280, #9ca3af); }
-
-  .mandate-type {
-    font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    margin-bottom: 0.5rem;
-  }
-
-  .mandate-method {
-    display: inline-block;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 4px;
-    margin-bottom: 0.75rem;
-    color: var(--muted2);
-  }
-
-  .mandate-desc { font-size: 13px; color: var(--muted2); line-height: 1.5; }
-
-  /* INTEGRATION CARDS */
-  .integration-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .int-provider {
-    font-weight: 700; font-size: 14px;
-  }
-
-  .int-role {
-    font-size: 11px;
-    font-family: var(--mono);
-    color: var(--accent);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .int-note { font-size: 13px; color: var(--muted2); line-height: 1.5; }
-
-  /* TERM CARDS */
-  .term-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-  }
-
-  .term-abbr {
-    font-family: var(--mono);
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--accent3);
-    margin-bottom: 4px;
-  }
-
-  .term-name {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 8px;
-  }
-
-  .term-def { font-size: 13px; color: var(--muted2); line-height: 1.5; }
-
-  /* KYC COMPONENT */
-  .kyc-component {
-    display: flex; gap: 1rem; align-items: flex-start;
-    padding: 1.25rem;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-
-  .kyc-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-
-  .kyc-body h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .kyc-body p { font-size: 13px; color: var(--muted2); line-height: 1.5; }
-
-  /* ALERT BOX */
-  .alert {
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    display: flex; gap: 0.75rem; align-items: flex-start;
-    font-size: 13.5px;
-    color: #fcd34d;
-    margin-top: 1.5rem;
-  }
-
-  .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
-
-  /* SVG ARCHITECTURE DIAGRAM */
-  .arch-diagram {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    text-align: center;
-    overflow-x: auto;
-  }
-
-  .arch-diagram svg { max-width: 100%; height: auto; }
-
-  /* ACTOR PILLS */
-  .actors {
-    display: flex; flex-wrap: wrap; gap: 0.75rem;
-    margin-top: 1.5rem;
-  }
-
-  .actor-pill {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    padding: 8px 16px;
-    font-size: 13px;
-  }
-
-  .actor-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-  }
-
-  /* LSP HIERARCHY */
-  .hierarchy {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-  }
-
-  .hier-level {
-    display: flex; align-items: stretch; gap: 0; margin-bottom: 0;
-  }
-
-  .hier-indent {
-    width: 20px; border-left: 2px solid var(--border); margin: 0 12px;
-    flex-shrink: 0;
-  }
-
-  .hier-row {
-    flex: 1;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-
-  .hier-name { font-weight: 600; font-size: 14px; }
-  .hier-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .hier-badge {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: rgba(79,110,247,0.15);
-    color: #818cf8;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  /* CREDIT APPROVAL */
-  .bce-factors {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;
-    margin-top: 1.5rem;
-  }
-
-  .bce-factor {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 1.25rem;
-    border-top: 2px solid var(--accent);
-  }
-
-  .bce-factor h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .bce-factor p { font-size: 12.5px; color: var(--muted2); line-height: 1.5; }
-
-  /* STATUS BADGE */
-  .status-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(6,214,160,0.1);
-    border: 1px solid rgba(6,214,160,0.25);
-    color: var(--accent3);
-    font-size: 12px; font-weight: 600;
-    font-family: var(--mono);
-    padding: 6px 14px;
-    border-radius: 6px;
-  }
-
-  /* FOOTER */
-  footer {
-    padding: 3rem 2rem;
-    text-align: center;
-    color: var(--muted);
-    font-size: 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  footer strong { color: var(--muted2); }
-
-  /* RESPONSIVE */
-  @media (max-width: 600px) {
-    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    .hero h1 { font-size: 2rem; }
-    section { padding: 3rem 0; }
-  }
-
-  /* COLLATERAL FLOW SVG */
-  .collateral-visual {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-  }
-</style>
-</head>
-<body>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-grid"></div>
-  <div class="hero-content">
-    <div class="badge">
-      <span class="badge-dot"></span>
-      Internal Technical Document — Confidential
-    </div>
-    <h1>Volt Money<br><span>Loan Onboarding Service</span></h1>
-    <p>Loan Against Mutual Funds &amp; Securities — Full lifecycle from lead capture to loan account creation.</p>
-    <div class="hero-meta">
-      <div class="hero-meta-item">
-        <div class="label">Document Type</div>
-        <div class="value">Technical Specification</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="label">Scope</div>
-        <div class="value">LOS Only</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="label">Product</div>
-        <div class="value">LAMF &amp; LAS</div>
-      </div>
-      <div class="hero-meta-item">
-        <div class="label">Max Tenure</div>
-        <div class="value">3 Years</div>
-      </div>
-    </div>
-  </div>
-  <div class="scroll-hint">
-    <span>Scroll</span>
-    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-  </div>
-</section>
-
-<!-- NAV -->
-<nav class="nav">
-  <div class="nav-inner">
-    <div class="nav-logo"><img src="./VoltBlue.svg" alt="Volt Money"></div>
-    <a href="#overview" class="nav-link">Overview</a>
-    <a href="#identities" class="nav-link">Identities</a>
-    <a href="#origination" class="nav-link">Origination Flow</a>
-    <a href="#lsp" class="nav-link">LSP Flow</a>
-    <a href="#kyc" class="nav-link">KYC</a>
-    <a href="#mandate" class="nav-link">Mandate</a>
-    <a href="#collateral" class="nav-link">Collateral</a>
-    <a href="#loan-creation" class="nav-link">Loan Creation</a>
-    <a href="#integrations" class="nav-link">Integrations</a>
-    <a href="#users" class="nav-link">Users</a>
-  </div>
-</nav>
-
-<!-- OVERVIEW -->
-<section id="overview">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 1 — Overview</span>
-      <h2>What is LAMF &amp; LAS?</h2>
-      <p class="section-desc">The Loan Against Mutual Funds (LAMF) and Loan Against Securities (LAS) products let customers pledge existing holdings as collateral in exchange for a revolving credit line. The LOS covers the full lifecycle from lead capture to loan account creation. Loan Management (LMS) is documented separately.</p>
-    </div>
-
-    <!-- Architecture SVG -->
-    <div class="arch-diagram">
-      <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="'Sora', sans-serif">
-        <!-- BG nodes -->
-        <!-- Customer -->
-        <rect x="20" y="110" width="130" height="80" rx="12" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="85" y="145" text-anchor="middle" fill="#e8eaf6" font-size="13" font-weight="600">Customer</text>
-        <text x="85" y="162" text-anchor="middle" fill="#6b7280" font-size="11">Borrower / End User</text>
-        <circle cx="85" cy="125" r="6" fill="#4f6ef7" opacity="0.5"/>
-
-        <!-- Arrow 1 -->
-        <path d="M152 150 L195 150" stroke="#1e2340" stroke-width="1.5" marker-end="url(#arr)"/>
-
-        <!-- Partner -->
-        <rect x="197" y="110" width="130" height="80" rx="12" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="262" y="145" text-anchor="middle" fill="#e8eaf6" font-size="13" font-weight="600">Partner</text>
-        <text x="262" y="162" text-anchor="middle" fill="#6b7280" font-size="11">Affiliate / Referral</text>
-        <circle cx="262" cy="125" r="6" fill="#06d6a0" opacity="0.5"/>
-
-        <!-- Arrow 2 -->
-        <path d="M329 150 L372 150" stroke="#1e2340" stroke-width="1.5" marker-end="url(#arr)"/>
-
-        <!-- Volt Money Platform -->
-        <rect x="374" y="80" width="140" height="140" rx="12" fill="#131629" stroke="#4f6ef7" stroke-width="1.5"/>
-        <text x="444" y="130" text-anchor="middle" fill="#818cf8" font-size="12" font-weight="700" letter-spacing="1">VOLT MONEY</text>
-        <text x="444" y="148" text-anchor="middle" fill="#9ca3af" font-size="11">LSP Platform</text>
-        <text x="444" y="165" text-anchor="middle" fill="#9ca3af" font-size="11">LOS Orchestrator</text>
-        <rect x="410" y="175" width="68" height="22" rx="4" fill="rgba(79,110,247,0.15)" stroke="rgba(79,110,247,0.3)" stroke-width="1"/>
-        <text x="444" y="190" text-anchor="middle" fill="#818cf8" font-size="10" font-weight="600">API Layer</text>
-
-        <!-- Arrow 3 -->
-        <path d="M516 150 L558 150" stroke="#1e2340" stroke-width="1.5" marker-end="url(#arr)"/>
-
-        <!-- DSP Finance -->
-        <rect x="560" y="110" width="130" height="80" rx="12" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="625" y="145" text-anchor="middle" fill="#e8eaf6" font-size="13" font-weight="600">DSP Finance</text>
-        <text x="625" y="162" text-anchor="middle" fill="#6b7280" font-size="11">Lender / Financer</text>
-        <circle cx="625" cy="125" r="6" fill="#f59e0b" opacity="0.5"/>
-
-        <!-- Arrow 4 -->
-        <path d="M692 150 L735 150" stroke="#1e2340" stroke-width="1.5" marker-end="url(#arr)"/>
-
-        <!-- LMS -->
-        <rect x="737" y="110" width="100" height="80" rx="12" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="787" y="145" text-anchor="middle" fill="#e8eaf6" font-size="13" font-weight="600">LMS</text>
-        <text x="787" y="162" text-anchor="middle" fill="#6b7280" font-size="11">Finflux</text>
-        <circle cx="787" cy="125" r="6" fill="#7c3aed" opacity="0.5"/>
-
-        <!-- Labels below arrows -->
-        <text x="172" y="143" text-anchor="middle" fill="#4b5563" font-size="10">applies</text>
-        <text x="349" y="143" text-anchor="middle" fill="#4b5563" font-size="10">refers</text>
-        <text x="536" y="143" text-anchor="middle" fill="#4b5563" font-size="10">submits</text>
-        <text x="714" y="143" text-anchor="middle" fill="#4b5563" font-size="10">handoff</text>
-
-        <!-- DIGIO box below -->
-        <rect x="315" y="248" width="100" height="40" rx="8" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="365" y="272" text-anchor="middle" fill="#9ca3af" font-size="12" font-weight="600">DIGIO</text>
-
-        <!-- Arrow up from DIGIO to Volt -->
-        <path d="M365 248 L444 222" stroke="#1e2340" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr2)"/>
-        <text x="398" y="245" fill="#4b5563" font-size="10">KYC &amp; Mandate</text>
-
-        <!-- Arrow defs -->
-        <defs>
-          <marker id="arr" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340"/>
-          </marker>
-          <marker id="arr2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340"/>
-          </marker>
-        </defs>
-      </svg>
-    </div>
-
-    <!-- System Actors -->
-    <h3 style="margin-top: 2.5rem;">System Actors</h3>
-    <div class="actors">
-      <div class="actor-pill"><span class="actor-dot" style="background:#4f6ef7"></span> Customer — End borrower who applies for the loan</div>
-      <div class="actor-pill"><span class="actor-dot" style="background:#06d6a0"></span> Partner — Affiliate / referral entity directing customers to Volt Money</div>
-      <div class="actor-pill"><span class="actor-dot" style="background:#f59e0b"></span> DSP Finance — Money lender and finance provider</div>
-      <div class="actor-pill"><span class="actor-dot" style="background:#a78bfa"></span> Volt Money Platform — End-to-end API orchestrator, acts as LSP</div>
-      <div class="actor-pill"><span class="actor-dot" style="background:#f87171"></span> LSP — Loan service provider presenting opportunity to DSP Finance</div>
-    </div>
-  </div>
-</section>
-
-<!-- IDENTITIES -->
-<section id="identities">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 1.2 — Key Identity Entities</span>
-      <h2>Identity &amp; Reference Model</h2>
-      <p class="section-desc">Every actor and application is tracked by a set of unique identifiers across both DSP Finance and the Volt Money platform.</p>
-    </div>
-
-    <div style="margin-bottom: 1rem;">
-      <span style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">DSP Finance IDs</span>
-    </div>
-    <div class="grid-2" style="margin-bottom: 2rem;">
-      <div class="id-card">
-        <div class="id-key">customerID</div>
-        <span class="id-source source-dsp">DSP</span>
-        <div class="id-desc">Customer-level identifier assigned by DSP Finance.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">leadID</div>
-        <span class="id-source source-dsp">DSP</span>
-        <div class="id-desc">Generated when a PAN + sourcing channel + product combination is submitted.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">opportunityID</div>
-        <span class="id-source source-dsp">DSP</span>
-        <div class="id-desc">Generated from lead + utilities; tracks the active application.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">utilityReferenceID</div>
-        <span class="id-source source-dsp">DSP</span>
-        <div class="id-desc">Tracks the user based on their current step in the journey.</div>
-      </div>
-    </div>
-
-    <div style="margin-bottom: 1rem;">
-      <span style="font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">Volt Money IDs</span>
-    </div>
-    <div class="grid-2">
-      <div class="id-card">
-        <div class="id-key">userID</div>
-        <span class="id-source source-vm">VM</span>
-        <div class="id-desc">Unique identifier assigned to the user account on the Volt Money platform.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">BorrowerID</div>
-        <span class="id-source source-vm">VM</span>
-        <div class="id-desc">ID created for a userID that borrows funds.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">PartnerID</div>
-        <span class="id-source source-vm">VM</span>
-        <div class="id-desc">ID created for a userID that partners with Volt and handles customers.</div>
-      </div>
-      <div class="id-card">
-        <div class="id-key">ApplicationID</div>
-        <span class="id-source source-vm">VM</span>
-        <div class="id-desc">Generated from user + utilities; tracks the active application in Volt Money.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ORIGINATION FLOW -->
-<section id="origination">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 2 — High-Level Origination Flow</span>
-      <h2>Lead Creation → Disbursement</h2>
-      <p class="section-desc">Every major stage from lead creation to loan disbursement, in sequence.</p>
-    </div>
-
-    <div class="grid-2">
-      <!-- Step Flow -->
-      <div class="flow-container">
-        <div class="step-flow">
-          <div class="step-item s1">
-            <div class="step-left">
-              <div class="step-num">01</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Lead Creation</div>
-              <div class="step-desc">PAN + sourcing channel + product submitted. A Lead record is created.</div>
-            </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Volt Money — LOS Technical Documentation</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #07080f;
+        --bg2: #0d0f1c;
+        --bg3: #131629;
+        --card: #0f1120;
+        --border: #1e2340;
+        --accent: #4f6ef7;
+        --accent2: #7c3aed;
+        --accent3: #06d6a0;
+        --gold: #f59e0b;
+        --text: #e8eaf6;
+        --muted: #6b7280;
+        --muted2: #9ca3af;
+        --danger: #ef4444;
+        --font: "Sora", sans-serif;
+        --mono: "JetBrains Mono", monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        font-size: 15px;
+        line-height: 1.7;
+        overflow-x: hidden;
+      }
+
+      /* NOISE OVERLAY */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.4;
+      }
+
+      /* HERO */
+      .hero {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+        padding: 4rem 2rem;
+      }
+
+      .hero-bg {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 50% 40%,
+            rgba(79, 110, 247, 0.15) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 50% 50% at 80% 80%,
+            rgba(124, 58, 237, 0.1) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 40% 40% at 20% 70%,
+            rgba(6, 214, 160, 0.07) 0%,
+            transparent 60%
+          );
+      }
+
+      .hero-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(79, 110, 247, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(79, 110, 247, 0.06) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(79, 110, 247, 0.12);
+        border: 1px solid rgba(79, 110, 247, 0.3);
+        color: #818cf8;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: 100px;
+        margin-bottom: 2rem;
+        animation: fadeUp 0.6s ease both;
+      }
+
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--accent3);
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      .hero h1 {
+        font-size: clamp(2.4rem, 6vw, 4.5rem);
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+        animation: fadeUp 0.6s 0.1s ease both;
+      }
+
+      .hero h1 span {
+        background: linear-gradient(135deg, #4f6ef7, #7c3aed, #06d6a0);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .hero p {
+        margin-top: 1.5rem;
+        font-size: 1.1rem;
+        color: var(--muted2);
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+        animation: fadeUp 0.6s 0.2s ease both;
+      }
+
+      .hero-meta {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2.5rem;
+        animation: fadeUp 0.6s 0.3s ease both;
+      }
+
+      .hero-meta-item {
+        text-align: center;
+      }
+
+      .hero-meta-item .label {
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+
+      .hero-meta-item .value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--muted2);
+        font-family: var(--mono);
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* SCROLL INDICATOR */
+      .scroll-hint {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        animation: fadeUp 0.6s 0.8s ease both;
+      }
+
+      .scroll-hint svg {
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(6px);
+        }
+      }
+
+      /* MAIN LAYOUT */
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      /* NAV */
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(7, 8, 15, 0.5);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 2rem;
+        border-radius: 0 0 25px 25px;
+      }
+
+      .nav-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        overflow-x: auto;
+      }
+
+      .nav-logo {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text);
+        padding: 1rem 1.5rem 1rem 0;
+        border-right: 1px solid var(--border);
+        margin-right: 1rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .nav-logo img {
+        display: block;
+        height: 24px;
+        width: auto;
+      }
+
+      .nav-logo span {
+        color: var(--accent);
+      }
+
+      .nav-link {
+        padding: 1rem 0.9rem;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--muted);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: color 0.2s;
+        letter-spacing: 0.02em;
+      }
+
+      .nav-link:hover {
+        color: var(--text);
+      }
+
+      /* SECTIONS */
+      section {
+        padding: 5rem 0;
+        border-bottom: 1px solid var(--border);
+        position: relative;
+      }
+
+      .section-header {
+        margin-bottom: 3rem;
+      }
+
+      .section-tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      h2 {
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.75rem;
+      }
+
+      .section-desc {
+        margin-top: 0.75rem;
+        color: var(--muted2);
+        max-width: 600px;
+      }
+
+      /* CARDS */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        transition:
+          border-color 0.2s,
+          transform 0.2s;
+      }
+
+      .card:hover {
+        border-color: rgba(79, 110, 247, 0.3);
+        transform: translateY(-2px);
+      }
+
+      /* GRID LAYOUTS */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+      }
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      /* TABLE */
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+      }
+
+      thead th {
+        background: var(--bg3);
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        border-bottom: 1px solid var(--border);
+      }
+
+      tbody td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      tbody tr:hover td {
+        background: rgba(79, 110, 247, 0.04);
+      }
+
+      td:first-child {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      /* FLOW DIAGRAM */
+      .flow-container {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem;
+        overflow-x: auto;
+      }
+
+      /* STEP FLOW */
+      .step-flow {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        position: relative;
+      }
+
+      .step-item {
+        display: flex;
+        gap: 1.5rem;
+        position: relative;
+      }
+
+      .step-left {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        width: 48px;
+      }
+
+      .step-num {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: var(--mono);
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+      }
+
+      .step-line {
+        flex: 1;
+        width: 2px;
+        background: var(--border);
+        margin: 4px 0;
+      }
+
+      .step-item:last-child .step-line {
+        display: none;
+      }
+
+      .step-body {
+        padding: 0 0 2rem 0;
+        flex: 1;
+      }
+
+      .step-title {
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+
+      .step-desc {
+        font-size: 13.5px;
+        color: var(--muted2);
+        line-height: 1.6;
+      }
+
+      /* COLOR VARIANTS FOR STEPS */
+      .s1 .step-num {
+        background: rgba(79, 110, 247, 0.15);
+        color: #818cf8;
+        border: 1px solid rgba(79, 110, 247, 0.3);
+      }
+      .s2 .step-num {
+        background: rgba(6, 214, 160, 0.12);
+        color: var(--accent3);
+        border: 1px solid rgba(6, 214, 160, 0.25);
+      }
+      .s3 .step-num {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--gold);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+      }
+      .s4 .step-num {
+        background: rgba(124, 58, 237, 0.15);
+        color: #a78bfa;
+        border: 1px solid rgba(124, 58, 237, 0.3);
+      }
+      .s5 .step-num {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+
+      /* IDENTITY CARDS */
+      .id-card {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+      }
+
+      .id-key {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+
+      .id-source {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 100px;
+        margin-bottom: 6px;
+      }
+
+      .source-dsp {
+        background: rgba(79, 110, 247, 0.15);
+        color: #818cf8;
+      }
+      .source-vm {
+        background: rgba(6, 214, 160, 0.12);
+        color: var(--accent3);
+      }
+
+      .id-desc {
+        font-size: 13px;
+        color: var(--muted2);
+      }
+
+      /* MANDATE CARDS */
+      .mandate-card {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .mandate-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+      }
+
+      .m1::before {
+        background: linear-gradient(90deg, #4f6ef7, #7c3aed);
+      }
+      .m2::before {
+        background: linear-gradient(90deg, #06d6a0, #0ea5e9);
+      }
+      .m3::before {
+        background: linear-gradient(90deg, #f59e0b, #f97316);
+      }
+      .m4::before {
+        background: linear-gradient(90deg, #6b7280, #9ca3af);
+      }
+
+      .mandate-type {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+      }
+
+      .mandate-method {
+        display: inline-block;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 3px 10px;
+        border-radius: 4px;
+        margin-bottom: 0.75rem;
+        color: var(--muted2);
+      }
+
+      .mandate-desc {
+        font-size: 13px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      /* INTEGRATION CARDS */
+      .integration-card {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .int-provider {
+        font-weight: 700;
+        font-size: 14px;
+      }
+
+      .int-role {
+        font-size: 11px;
+        font-family: var(--mono);
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .int-note {
+        font-size: 13px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      /* TERM CARDS */
+      .term-card {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+      }
+
+      .term-abbr {
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--accent3);
+        margin-bottom: 4px;
+      }
+
+      .term-name {
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+      }
+
+      .term-def {
+        font-size: 13px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      /* KYC COMPONENT */
+      .kyc-component {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 1.25rem;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      .kyc-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .kyc-body h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .kyc-body p {
+        font-size: 13px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      /* ALERT BOX */
+      .alert {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        font-size: 13.5px;
+        color: #fcd34d;
+        margin-top: 1.5rem;
+      }
+
+      .alert-icon {
+        font-size: 16px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* SVG ARCHITECTURE DIAGRAM */
+      .arch-diagram {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        overflow-x: auto;
+      }
+
+      .arch-diagram svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* ACTOR PILLS */
+      .actors {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      .actor-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 100px;
+        padding: 8px 16px;
+        font-size: 13px;
+      }
+
+      .actor-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      /* LSP HIERARCHY */
+      .hierarchy {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+      }
+
+      .hier-level {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        margin-bottom: 0;
+      }
+
+      .hier-indent {
+        width: 20px;
+        border-left: 2px solid var(--border);
+        margin: 0 12px;
+        flex-shrink: 0;
+      }
+
+      .hier-row {
+        flex: 1;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .hier-name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .hier-desc {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .hier-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: rgba(79, 110, 247, 0.15);
+        color: #818cf8;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      /* CREDIT APPROVAL */
+      .bce-factors {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .bce-factor {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 1.25rem;
+        border-top: 2px solid var(--accent);
+      }
+
+      .bce-factor h4 {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .bce-factor p {
+        font-size: 12.5px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      /* STATUS BADGE */
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(6, 214, 160, 0.1);
+        border: 1px solid rgba(6, 214, 160, 0.25);
+        color: var(--accent3);
+        font-size: 12px;
+        font-weight: 600;
+        font-family: var(--mono);
+        padding: 6px 14px;
+        border-radius: 6px;
+      }
+
+      /* FOOTER */
+      footer {
+        padding: 3rem 2rem;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      footer strong {
+        color: var(--muted2);
+      }
+
+      /* RESPONSIVE */
+      @media (max-width: 600px) {
+        .grid-2,
+        .grid-3,
+        .grid-4 {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 2rem;
+        }
+        section {
+          padding: 3rem 0;
+        }
+      }
+
+      /* COLLATERAL FLOW SVG */
+      .collateral-visual {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .wrapper {
+        padding: 1.5rem 1rem 1rem;
+
+        overflow-y: visible;
+      }
+
+      .flow-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        min-width: 900px;
+        position: relative;
+        overflow: visible;
+      }
+
+      .node-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+        overflow: visible;
+        isolation: isolate;
+      }
+
+      .node {
+        border-radius: 10px;
+        border: 1.5px solid;
+        padding: 10px 10px 8px;
+        width: 118px;
+        min-height: 72px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 5px;
+        transition:
+          transform 0.18s,
+          box-shadow 0.18s,
+          border-color 0.18s;
+        position: relative;
+        overflow: visible; /* ← change from hidden to visible */
+      }
+
+      .node::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        border-radius: 10px 10px 0 0;
+      }
+      .node:hover {
+        transform: translateY(-3px);
+      }
+
+      .node-pending-disbursal {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #22d3ee;
+      }
+      .node-pending-disbursal::before {
+        background: #22d3ee;
+      }
+      .node-pending-disbursal .node-abbr {
+        color: #22d3ee;
+      }
+
+      .node-pending-lodge {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #0ea5e9;
+      }
+      .node-pending-lodge::before {
+        background: #0ea5e9;
+      }
+      .node-pending-lodge .node-abbr {
+        color: #0ea5e9;
+      }
+
+      .node-approved-not-disbursed {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #8b5cf6;
+      }
+      .node-approved-not-disbursed::before {
+        background: #8b5cf6;
+      }
+      .node-approved-not-disbursed .node-abbr {
+        color: #8b5cf6;
+      }
+
+      .node-active {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #10b981;
+      }
+      .node-active::before {
+        background: linear-gradient(90deg, #10b981, #34d399);
+      }
+      .node-active .node-abbr {
+        color: #34d399;
+      }
+
+      .node-pending-closure {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #f59e0b;
+      }
+      .node-pending-closure::before {
+        background: #f59e0b;
+      }
+      .node-pending-closure .node-abbr {
+        color: #fbbf24;
+      }
+
+      .node-closed {
+        background: rgba(12, 16, 24, 0.9);
+        border-color: #ef4444;
+      }
+      .node-closed::before {
+        background: linear-gradient(90deg, #22d3ee, #10b981);
+      }
+      .node-closed .node-abbr {
+        color: #e2e8f0;
+      }
+
+      .node-abbr {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .node-title {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.3;
+      }
+
+      .arrow-wrap {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        position: relative;
+        margin: 0 -1px;
+      }
+      .arrow-line {
+        width: 38px;
+        height: 2px;
+        background: var(--border);
+        position: relative;
+        margin-top: 0;
+      }
+      .arrow-line::after {
+        content: "";
+        position: absolute;
+        right: -1px;
+        top: -4px;
+        border-left: 8px solid var(--border);
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+      }
+
+      .tooltip-box {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #0b0f15;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        width: 180px;
+        z-index: 10;
+        pointer-events: none;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+        z-index: 1000;
+      }
+      .tooltip-box::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-top: 6px solid var(--border);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        z-index: 1000;
+      }
+      .node-wrap:hover .tooltip-box {
+        display: block;
+      }
+      .tooltip-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      .tooltip-desc {
+        font-size: 11px;
+        color: var(--muted2);
+        line-height: 1.5;
+      }
+
+      .active-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #34d399;
+        display: inline-block;
+        margin-right: 4px;
+        animation: pulse 2s infinite;
+        vertical-align: middle;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(0.8);
+        }
+      }
+
+      .legend {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border);
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--muted2);
+      }
+      .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .section-tag {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+      }
+      .desc-text {
+        font-size: 12px;
+        color: var(--muted2);
+        margin-bottom: 1.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-content">
+        <div class="badge">
+          <span class="badge-dot"></span>
+          Internal Technical Document — Confidential
+        </div>
+        <h1>Volt Money<br /><span>Loan Onboarding Service</span></h1>
+        <p>
+          Loan Against Mutual Funds &amp; Securities — Full lifecycle from lead
+          capture to loan account creation.
+        </p>
+        <div class="hero-meta">
+          <div class="hero-meta-item">
+            <div class="label">Document Type</div>
+            <div class="value">Technical Specification</div>
           </div>
-          <div class="step-item s2">
-            <div class="step-left">
-              <div class="step-num">02</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">PAN Fetch</div>
-              <div class="step-desc">Customer enters PAN. Details fetched via Dcentro (migrating to NSDL).</div>
-            </div>
+          <div class="hero-meta-item">
+            <div class="label">Scope</div>
+            <div class="value">LOS Only</div>
           </div>
-          <div class="step-item s3">
-            <div class="step-left">
-              <div class="step-num">03</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Phone / OTP</div>
-              <div class="step-desc">Customer enters mobile number. OTP dispatched via MFC to retrieve all linked mutual fund folios.</div>
-            </div>
+          <div class="hero-meta-item">
+            <div class="label">Product</div>
+            <div class="value">LAMF &amp; LAS</div>
           </div>
-          <div class="step-item s4">
-            <div class="step-left">
-              <div class="step-num">04</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Opportunity Creation</div>
-              <div class="step-desc">Lead enriched with utilities (mobile, email, PAN, BV, address, pledging, agreement, KFS, mandate). BRE runs credit approval. Opportunity moves to approved state.</div>
-            </div>
-          </div>
-          <div class="step-item s5">
-            <div class="step-left">
-              <div class="step-num">05</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">KYC</div>
-              <div class="step-desc">Full KYC performed through DIGIO (Digilocker, selfie, KYC summary, additional details).</div>
-            </div>
-          </div>
-          <div class="step-item s1">
-            <div class="step-left">
-              <div class="step-num">06</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Bank Verification</div>
-              <div class="step-desc">Bank account verified via penny drop.</div>
-            </div>
-          </div>
-          <div class="step-item s2">
-            <div class="step-left">
-              <div class="step-num">07</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Mandate Setup</div>
-              <div class="step-desc">Mandate registered through DIGIO. See §5 for mandate types.</div>
-            </div>
-          </div>
-          <div class="step-item s3">
-            <div class="step-left">
-              <div class="step-num">08</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Pledging &amp; Agreement</div>
-              <div class="step-desc">Mutual fund units pledged as collateral. KFS and loan agreement presented and accepted.</div>
-            </div>
-          </div>
-          <div class="step-item s4">
-            <div class="step-left">
-              <div class="step-num">09</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Credit Approval</div>
-              <div class="step-desc">Final step of the LOS pipeline.</div>
-            </div>
-          </div>
-          <div class="step-item s5">
-            <div class="step-left">
-              <div class="step-num">10</div>
-              <div class="step-line"></div>
-            </div>
-            <div class="step-body">
-              <div class="step-title">Client &amp; Loan Creation</div>
-              <div class="step-desc">Client entity created via /create-customer API. Loan account created and lodged in Finflux (LMS).</div>
-            </div>
+          <div class="hero-meta-item">
+            <div class="label">Max Tenure</div>
+            <div class="value">3 Years</div>
           </div>
         </div>
       </div>
+      <div class="scroll-hint">
+        <span>Scroll</span>
+        <svg
+          width="16"
+          height="16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          viewBox="0 0 24 24"
+        >
+          <path d="M12 5v14M5 12l7 7 7-7" />
+        </svg>
+      </div>
+    </section>
 
-      <!-- Funnel SVG -->
-      <div>
-        <div class="arch-diagram" style="padding: 1.5rem;">
-          <svg viewBox="0 0 320 480" xmlns="http://www.w3.org/2000/svg" font-family="'Sora',sans-serif">
+    <!-- NAV -->
+    <nav class="nav">
+      <div class="nav-inner">
+        <div class="nav-logo">
+          <img src="./VoltBlue.svg" alt="Volt Money" />
+        </div>
+        <a href="#overview" class="nav-link">Overview</a>
+        <a href="#identities" class="nav-link">Identities</a>
+        <a href="#origination" class="nav-link">Origination Flow</a>
+        <a href="#lsp" class="nav-link">LSP Flow</a>
+        <a href="#kyc" class="nav-link">KYC</a>
+        <a href="#bank" class="nav-link">Bank</a>
+        <a href="#mandate" class="nav-link">Mandate</a>
+        <a href="#collateral" class="nav-link">Collateral</a>
+        <a href="#kfs-agreement" class="nav-link">KFS &amp; Agreement</a>
+        <a href="#loan-creation" class="nav-link">Loan Creation</a>
+        <a href="#integrations" class="nav-link">Integrations</a>
+        <a href="#users" class="nav-link">Users</a>
+      </div>
+    </nav>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 1 — Overview</span>
+          <h2>What is LAMF &amp; LAS?</h2>
+          <p class="section-desc">
+            The Loan Against Mutual Funds (LAMF) and Loan Against Securities
+            (LAS) products let customers pledge existing holdings as collateral
+            in exchange for a revolving credit line. The LOS covers the full
+            lifecycle from lead capture to loan account creation. Loan
+            Management (LMS) is documented separately.
+          </p>
+        </div>
+
+        <!-- Architecture SVG -->
+        <div class="arch-diagram">
+          <svg
+            viewBox="0 0 860 300"
+            xmlns="http://www.w3.org/2000/svg"
+            font-family="'Sora', sans-serif"
+          >
+            <!-- BG nodes -->
+            <!-- Customer -->
+            <rect
+              x="20"
+              y="110"
+              width="130"
+              height="80"
+              rx="12"
+              fill="#0f1120"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="85"
+              y="145"
+              text-anchor="middle"
+              fill="#e8eaf6"
+              font-size="13"
+              font-weight="600"
+            >
+              Customer
+            </text>
+            <text
+              x="85"
+              y="162"
+              text-anchor="middle"
+              fill="#6b7280"
+              font-size="11"
+            >
+              Borrower / End User
+            </text>
+            <circle cx="85" cy="125" r="6" fill="#4f6ef7" opacity="0.5" />
+
+            <!-- Arrow 1 -->
+            <path
+              d="M152 150 L195 150"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#arr)"
+            />
+
+            <!-- Partner -->
+            <rect
+              x="197"
+              y="110"
+              width="130"
+              height="80"
+              rx="12"
+              fill="#0f1120"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="262"
+              y="145"
+              text-anchor="middle"
+              fill="#e8eaf6"
+              font-size="13"
+              font-weight="600"
+            >
+              Partner
+            </text>
+            <text
+              x="262"
+              y="162"
+              text-anchor="middle"
+              fill="#6b7280"
+              font-size="11"
+            >
+              Affiliate / Referral
+            </text>
+            <circle cx="262" cy="125" r="6" fill="#06d6a0" opacity="0.5" />
+
+            <!-- Arrow 2 -->
+            <path
+              d="M329 150 L372 150"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#arr)"
+            />
+
+            <!-- Volt Money Platform -->
+            <rect
+              x="374"
+              y="80"
+              width="140"
+              height="140"
+              rx="12"
+              fill="#131629"
+              stroke="#4f6ef7"
+              stroke-width="1.5"
+            />
+            <text
+              x="444"
+              y="130"
+              text-anchor="middle"
+              fill="#818cf8"
+              font-size="12"
+              font-weight="700"
+              letter-spacing="1"
+            >
+              VOLT MONEY
+            </text>
+            <text
+              x="444"
+              y="148"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+            >
+              LSP Platform
+            </text>
+            <text
+              x="444"
+              y="165"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+            >
+              LOS Orchestrator
+            </text>
+            <rect
+              x="410"
+              y="175"
+              width="68"
+              height="22"
+              rx="4"
+              fill="rgba(79,110,247,0.15)"
+              stroke="rgba(79,110,247,0.3)"
+              stroke-width="1"
+            />
+            <text
+              x="444"
+              y="190"
+              text-anchor="middle"
+              fill="#818cf8"
+              font-size="10"
+              font-weight="600"
+            >
+              API Layer
+            </text>
+
+            <!-- Arrow 3 -->
+            <path
+              d="M516 150 L558 150"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#arr)"
+            />
+
+            <!-- DSP Finance -->
+            <rect
+              x="560"
+              y="110"
+              width="130"
+              height="80"
+              rx="12"
+              fill="#0f1120"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="625"
+              y="145"
+              text-anchor="middle"
+              fill="#e8eaf6"
+              font-size="13"
+              font-weight="600"
+            >
+              DSP Finance
+            </text>
+            <text
+              x="625"
+              y="162"
+              text-anchor="middle"
+              fill="#6b7280"
+              font-size="11"
+            >
+              Lender / Financer
+            </text>
+            <circle cx="625" cy="125" r="6" fill="#f59e0b" opacity="0.5" />
+
+            <!-- Arrow 4 -->
+            <path
+              d="M692 150 L735 150"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#arr)"
+            />
+
+            <!-- LMS -->
+            <rect
+              x="737"
+              y="110"
+              width="100"
+              height="80"
+              rx="12"
+              fill="#0f1120"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="787"
+              y="145"
+              text-anchor="middle"
+              fill="#e8eaf6"
+              font-size="13"
+              font-weight="600"
+            >
+              LMS
+            </text>
+            <text
+              x="787"
+              y="162"
+              text-anchor="middle"
+              fill="#6b7280"
+              font-size="11"
+            >
+              Finflux
+            </text>
+            <circle cx="787" cy="125" r="6" fill="#7c3aed" opacity="0.5" />
+
+            <!-- Labels below arrows -->
+            <text
+              x="172"
+              y="143"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              applies
+            </text>
+            <text
+              x="349"
+              y="143"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              refers
+            </text>
+            <text
+              x="536"
+              y="143"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              submits
+            </text>
+            <text
+              x="714"
+              y="143"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              handoff
+            </text>
+
+            <!-- DIGIO box below -->
+            <rect
+              x="315"
+              y="248"
+              width="100"
+              height="40"
+              rx="8"
+              fill="#0f1120"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="365"
+              y="272"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="12"
+              font-weight="600"
+            >
+              DIGIO
+            </text>
+
+            <!-- Arrow up from DIGIO to Volt -->
+            <path
+              d="M365 248 L444 222"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              stroke-dasharray="4,3"
+              marker-end="url(#arr2)"
+            />
+            <text x="398" y="245" fill="#4b5563" font-size="10">
+              KYC &amp; Mandate
+            </text>
+
+            <!-- Arrow defs -->
             <defs>
-              <linearGradient id="funnelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4f6ef7" stop-opacity="0.9"/>
-                <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.9"/>
-              </linearGradient>
-              <linearGradient id="funnelGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#06d6a0" stop-opacity="0.8"/>
-                <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.8"/>
-              </linearGradient>
+              <marker
+                id="arr"
+                markerWidth="6"
+                markerHeight="6"
+                refX="6"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340" />
+              </marker>
+              <marker
+                id="arr2"
+                markerWidth="6"
+                markerHeight="6"
+                refX="6"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340" />
+              </marker>
             </defs>
-
-            <!-- Pipeline stages as trapezoids -->
-            <!-- Stage 1 - Lead -->
-            <polygon points="20,10 300,10 280,56 40,56" fill="url(#funnelGrad)" opacity="0.85"/>
-            <text x="160" y="38" text-anchor="middle" fill="white" font-size="12" font-weight="600">Lead Creation</text>
-
-            <!-- Stage 2 -->
-            <polygon points="40,60 280,60 265,106 55,106" fill="rgba(79,110,247,0.5)" stroke="#1e2340" stroke-width="1"/>
-            <text x="160" y="88" text-anchor="middle" fill="#e8eaf6" font-size="11.5">PAN Fetch + OTP</text>
-
-            <!-- Stage 3 -->
-            <polygon points="55,110 265,110 250,156 70,156" fill="rgba(6,214,160,0.35)" stroke="#1e2340" stroke-width="1"/>
-            <text x="160" y="138" text-anchor="middle" fill="#e8eaf6" font-size="11.5">Opportunity Creation</text>
-
-            <!-- Stage 4 -->
-            <polygon points="70,160 250,160 235,206 85,206" fill="rgba(245,158,11,0.35)" stroke="#1e2340" stroke-width="1"/>
-            <text x="160" y="188" text-anchor="middle" fill="#e8eaf6" font-size="11.5">KYC + Bank Verification</text>
-
-            <!-- Stage 5 -->
-            <polygon points="85,210 235,210 220,256 100,256" fill="rgba(124,58,237,0.4)" stroke="#1e2340" stroke-width="1"/>
-            <text x="160" y="238" text-anchor="middle" fill="#e8eaf6" font-size="11.5">Mandate + Pledging</text>
-
-            <!-- Stage 6 -->
-            <polygon points="100,260 220,260 205,306 115,306" fill="rgba(239,68,68,0.35)" stroke="#1e2340" stroke-width="1"/>
-            <text x="160" y="288" text-anchor="middle" fill="#e8eaf6" font-size="11.5">Credit Approval</text>
-
-            <!-- Stage 7 - Loan -->
-            <polygon points="115,310 205,310 185,356 135,356" fill="url(#funnelGrad2)" opacity="0.9"/>
-            <text x="160" y="338" text-anchor="middle" fill="white" font-size="11.5" font-weight="600">Loan Created</text>
-
-            <!-- Bottom -->
-            <polygon points="135,360 185,360 175,400 145,400" fill="rgba(6,214,160,0.8)"/>
-            <text x="160" y="385" text-anchor="middle" fill="white" font-size="11" font-weight="700">LMS ✓</text>
-
-            <!-- Label -->
-            <text x="160" y="440" text-anchor="middle" fill="#4b5563" font-size="10" letter-spacing="1">ORIGINATION FUNNEL</text>
           </svg>
         </div>
+
+        <!-- System Actors -->
+        <h3 style="margin-top: 2.5rem">System Actors</h3>
+        <div class="actors">
+          <div class="actor-pill">
+            <span class="actor-dot" style="background: #4f6ef7"></span> Customer
+            — End borrower who applies for the loan
+          </div>
+          <div class="actor-pill">
+            <span class="actor-dot" style="background: #06d6a0"></span> Partner
+            — Affiliate / referral entity directing customers to Volt Money
+          </div>
+          <div class="actor-pill">
+            <span class="actor-dot" style="background: #f59e0b"></span> DSP
+            Finance — Money lender and finance provider
+          </div>
+          <div class="actor-pill">
+            <span class="actor-dot" style="background: #a78bfa"></span> Volt
+            Money Platform — End-to-end API orchestrator, acts as LSP
+          </div>
+          <div class="actor-pill">
+            <span class="actor-dot" style="background: #f87171"></span> LSP —
+            Loan service provider presenting opportunity to DSP Finance
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- LSP FLOW -->
-<section id="lsp">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 3 — LSP Flow</span>
-      <h2>LSP Partner Journey</h2>
-      <p class="section-desc">When a loan is sourced via an LSP, the journey is partially pre-filled by the partner before the customer completes it.</p>
-    </div>
+    <!-- IDENTITIES -->
+    <section id="identities">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 1.2 — Key Identity Entities</span>
+          <h2>Identity &amp; Reference Model</h2>
+          <p class="section-desc">
+            Every actor and application is tracked by a set of unique
+            identifiers across both DSP Finance and the Volt Money platform.
+          </p>
+        </div>
 
-    <div class="grid-2" style="align-items: start;">
-      <!-- Hierarchy -->
-      <div>
-        <h3>§ 3.1 Entity Hierarchy in an LSP Application</h3>
-        <div class="hierarchy" style="margin-top: 1rem;">
-          <div style="display:flex; align-items:stretch; gap:0; margin-bottom: 8px;">
-            <div class="hier-row" style="margin-bottom:0;">
-              <div>
-                <div class="hier-name">Volt / Other LSP</div>
-                <div class="hier-desc">Root platform entity</div>
-              </div>
-              <div class="hier-badge">Root</div>
+        <div style="margin-bottom: 1rem">
+          <span
+            style="
+              font-size: 12px;
+              font-weight: 600;
+              letter-spacing: 0.06em;
+              text-transform: uppercase;
+              color: var(--muted);
+            "
+            >DSP Finance IDs</span
+          >
+        </div>
+        <div class="grid-2" style="margin-bottom: 2rem">
+          <div class="id-card">
+            <div class="id-key">customerID</div>
+            <span class="id-source source-dsp">DSP</span>
+            <div class="id-desc">
+              Customer-level identifier assigned by DSP Finance.
             </div>
           </div>
-          <div style="display:flex; align-items:stretch;">
-            <div class="hier-indent"></div>
-            <div style="flex:1;">
-              <div class="hier-row">
-                <div>
-                  <div class="hier-name">userID</div>
-                  <div class="hier-desc">Assigned to the LSP user or borrower</div>
+          <div class="id-card">
+            <div class="id-key">leadID</div>
+            <span class="id-source source-dsp">DSP</span>
+            <div class="id-desc">
+              Generated when a PAN + sourcing channel + product combination is
+              submitted.
+            </div>
+          </div>
+          <div class="id-card">
+            <div class="id-key">opportunityID</div>
+            <span class="id-source source-dsp">DSP</span>
+            <div class="id-desc">
+              Generated from lead + utilities; tracks the active application.
+            </div>
+          </div>
+          <div class="id-card">
+            <div class="id-key">utilityReferenceID</div>
+            <span class="id-source source-dsp">DSP</span>
+            <div class="id-desc">
+              Tracks the user based on their current step in the journey.
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem">
+          <span
+            style="
+              font-size: 12px;
+              font-weight: 600;
+              letter-spacing: 0.06em;
+              text-transform: uppercase;
+              color: var(--muted);
+            "
+            >Volt Money IDs</span
+          >
+        </div>
+        <div class="grid-2">
+          <div class="id-card">
+            <div class="id-key">userID</div>
+            <span class="id-source source-vm">VM</span>
+            <div class="id-desc">
+              Unique identifier assigned to the user account on the Volt Money
+              platform.
+            </div>
+          </div>
+          <div class="id-card">
+            <div class="id-key">BorrowerID</div>
+            <span class="id-source source-vm">VM</span>
+            <div class="id-desc">
+              ID created for a userID that borrows funds.
+            </div>
+          </div>
+          <div class="id-card">
+            <div class="id-key">PartnerID</div>
+            <span class="id-source source-vm">VM</span>
+            <div class="id-desc">
+              ID created for a userID that partners with Volt and handles
+              customers.
+            </div>
+          </div>
+          <div class="id-card">
+            <div class="id-key">ApplicationID</div>
+            <span class="id-source source-vm">VM</span>
+            <div class="id-desc">
+              Generated from user + utilities; tracks the active application in
+              Volt Money.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORIGINATION FLOW -->
+    <section id="origination">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 2 — High-Level Origination Flow</span>
+          <h2>Lead Creation → Disbursement</h2>
+          <p class="section-desc">
+            Every major stage from lead creation to loan disbursement, in
+            sequence.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <!-- Step Flow -->
+          <div class="flow-container">
+            <div class="step-flow">
+              <div class="step-item s1">
+                <div class="step-left">
+                  <div class="step-num">01</div>
+                  <div class="step-line"></div>
                 </div>
-                <div class="hier-badge">Identity</div>
+                <div class="step-body">
+                  <div class="step-title">Lead Creation</div>
+                  <div class="step-desc">
+                    PAN + sourcing channel + product submitted. A Lead record is
+                    created.
+                  </div>
+                </div>
               </div>
-              <div style="display:flex;">
+              <div class="step-item s2">
+                <div class="step-left">
+                  <div class="step-num">02</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">PAN Fetch</div>
+                  <div class="step-desc">
+                    Customer enters PAN. Details fetched via Dcentro (migrating
+                    to NSDL).
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s3">
+                <div class="step-left">
+                  <div class="step-num">03</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Phone / OTP</div>
+                  <div class="step-desc">
+                    Customer enters mobile number. OTP dispatched via MFC to
+                    retrieve all linked mutual fund folios.
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s4">
+                <div class="step-left">
+                  <div class="step-num">04</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Opportunity Creation</div>
+                  <div class="step-desc">
+                    Lead enriched with utilities (mobile, email, PAN, BV,
+                    address, pledging, agreement, KFS, mandate). BRE runs credit
+                    approval. Opportunity moves to approved state.
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s5">
+                <div class="step-left">
+                  <div class="step-num">05</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">KYC</div>
+                  <div class="step-desc">
+                    Full KYC performed through DIGIO (Digilocker, selfie, KYC
+                    summary).
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s1">
+                <div class="step-left">
+                  <div class="step-num">06</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Bank Verification</div>
+                  <div class="step-desc">
+                    Bank account verified via penny-drop testing. PAN name is
+                    matched to the bank account holder name; if there is a
+                    mismatch, the user sees a prominent warning and is blocked
+                    until the details are corrected/aligned (strict validation
+                    to ensure it matches).
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s2">
+                <div class="step-left">
+                  <div class="step-num">07</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Mandate Setup</div>
+                  <div class="step-desc">
+                    Mandate registered through DIGIO. See §5 for mandate types.
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s3">
+                <div class="step-left">
+                  <div class="step-num">08</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Pledging</div>
+                  <div class="step-desc">
+                    Mutual fund units pledged as collateral.
+                  </div>
+                </div>
+              </div>
+              <div class="step-item s4">
+                <div class="step-left">
+                  <div class="step-num">09</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Credit Approval</div>
+                  <div class="step-desc">Final step of the LOS pipeline.</div>
+                </div>
+              </div>
+              <div class="step-item s5">
+                <div class="step-left">
+                  <div class="step-num">10</div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-title">Client &amp; Loan Creation</div>
+                  <div class="step-desc">
+                    Client entity created via /create-customer API. Loan account
+                    created and lodged in Finflux (LMS).
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Funnel SVG -->
+          <div>
+            <div class="arch-diagram" style="padding: 1.5rem">
+              <svg
+                viewBox="0 0 320 480"
+                xmlns="http://www.w3.org/2000/svg"
+                font-family="'Sora',sans-serif"
+              >
+                <defs>
+                  <linearGradient
+                    id="funnelGrad"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stop-color="#4f6ef7" stop-opacity="0.9" />
+                    <stop
+                      offset="100%"
+                      stop-color="#7c3aed"
+                      stop-opacity="0.9"
+                    />
+                  </linearGradient>
+                  <linearGradient
+                    id="funnelGrad2"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stop-color="#06d6a0" stop-opacity="0.8" />
+                    <stop
+                      offset="100%"
+                      stop-color="#0ea5e9"
+                      stop-opacity="0.8"
+                    />
+                  </linearGradient>
+                </defs>
+
+                <!-- Pipeline stages as trapezoids -->
+                <!-- Stage 1 - Lead -->
+                <polygon
+                  points="20,10 300,10 280,56 40,56"
+                  fill="url(#funnelGrad)"
+                  opacity="0.85"
+                />
+                <text
+                  x="160"
+                  y="38"
+                  text-anchor="middle"
+                  fill="white"
+                  font-size="12"
+                  font-weight="600"
+                >
+                  Lead Creation
+                </text>
+
+                <!-- Stage 2 -->
+                <polygon
+                  points="40,60 280,60 265,106 55,106"
+                  fill="rgba(79,110,247,0.5)"
+                  stroke="#1e2340"
+                  stroke-width="1"
+                />
+                <text
+                  x="160"
+                  y="88"
+                  text-anchor="middle"
+                  fill="#e8eaf6"
+                  font-size="11.5"
+                >
+                  PAN Fetch + OTP
+                </text>
+
+                <!-- Stage 3 -->
+                <polygon
+                  points="55,110 265,110 250,156 70,156"
+                  fill="rgba(6,214,160,0.35)"
+                  stroke="#1e2340"
+                  stroke-width="1"
+                />
+                <text
+                  x="160"
+                  y="138"
+                  text-anchor="middle"
+                  fill="#e8eaf6"
+                  font-size="11.5"
+                >
+                  Opportunity Creation
+                </text>
+
+                <!-- Stage 4 -->
+                <polygon
+                  points="70,160 250,160 235,206 85,206"
+                  fill="rgba(245,158,11,0.35)"
+                  stroke="#1e2340"
+                  stroke-width="1"
+                />
+                <text
+                  x="160"
+                  y="188"
+                  text-anchor="middle"
+                  fill="#e8eaf6"
+                  font-size="11.5"
+                >
+                  KYC + Bank Verification
+                </text>
+
+                <!-- Stage 5 -->
+                <polygon
+                  points="85,210 235,210 220,256 100,256"
+                  fill="rgba(124,58,237,0.4)"
+                  stroke="#1e2340"
+                  stroke-width="1"
+                />
+                <text
+                  x="160"
+                  y="238"
+                  text-anchor="middle"
+                  fill="#e8eaf6"
+                  font-size="11.5"
+                >
+                  Mandate + Pledging
+                </text>
+
+                <!-- Stage 6 -->
+                <polygon
+                  points="100,260 220,260 205,306 115,306"
+                  fill="rgba(239,68,68,0.35)"
+                  stroke="#1e2340"
+                  stroke-width="1"
+                />
+                <text
+                  x="160"
+                  y="288"
+                  text-anchor="middle"
+                  fill="#e8eaf6"
+                  font-size="11.5"
+                >
+                  Credit Approval
+                </text>
+
+                <!-- Stage 7 - Loan -->
+                <polygon
+                  points="115,310 205,310 185,356 135,356"
+                  fill="url(#funnelGrad2)"
+                  opacity="0.9"
+                />
+                <text
+                  x="160"
+                  y="338"
+                  text-anchor="middle"
+                  fill="white"
+                  font-size="11.5"
+                  font-weight="600"
+                >
+                  Loan Created
+                </text>
+
+                <!-- Bottom -->
+                <polygon
+                  points="135,360 185,360 175,400 145,400"
+                  fill="rgba(6,214,160,0.8)"
+                />
+                <text
+                  x="160"
+                  y="385"
+                  text-anchor="middle"
+                  fill="white"
+                  font-size="11"
+                  font-weight="700"
+                >
+                  LMS ✓
+                </text>
+
+                <!-- Label -->
+                <text
+                  x="160"
+                  y="440"
+                  text-anchor="middle"
+                  fill="#4b5563"
+                  font-size="10"
+                  letter-spacing="1"
+                >
+                  ORIGINATION FUNNEL
+                </text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LSP FLOW -->
+    <section id="lsp">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 3 — LSP Flow</span>
+          <h2>LSP Partner Journey</h2>
+          <p class="section-desc">
+            When a loan is sourced via an LSP, the journey is partially
+            pre-filled by the partner before the customer completes it.
+          </p>
+        </div>
+
+        <div class="grid-2" style="align-items: start">
+          <!-- Hierarchy -->
+          <div>
+            <h3>§ 3.1 Entity Hierarchy in an LSP Application</h3>
+            <div class="hierarchy" style="margin-top: 1rem">
+              <div
+                style="
+                  display: flex;
+                  align-items: stretch;
+                  gap: 0;
+                  margin-bottom: 8px;
+                "
+              >
+                <div class="hier-row" style="margin-bottom: 0">
+                  <div>
+                    <div class="hier-name">Volt / Other LSP</div>
+                    <div class="hier-desc">Root platform entity</div>
+                  </div>
+                  <div class="hier-badge">Root</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: stretch">
                 <div class="hier-indent"></div>
-                <div style="flex:1;">
+                <div style="flex: 1">
                   <div class="hier-row">
                     <div>
-                      <div class="hier-name">borrower / partner</div>
-                      <div class="hier-desc">Can be both simultaneously</div>
+                      <div class="hier-name">userID</div>
+                      <div class="hier-desc">
+                        Assigned to the LSP user or borrower
+                      </div>
                     </div>
-                    <div class="hier-badge">Role</div>
+                    <div class="hier-badge">Identity</div>
                   </div>
-                  <div style="display:flex;">
+                  <div style="display: flex">
                     <div class="hier-indent"></div>
-                    <div style="flex:1;">
-                      <div class="hier-row" style="margin-bottom:0;">
+                    <div style="flex: 1">
+                      <div class="hier-row">
                         <div>
-                          <div class="hier-name">application</div>
-                          <div class="hier-desc">customerID + leadID + opportunityID</div>
+                          <div class="hier-name">borrower / partner</div>
+                          <div class="hier-desc">
+                            Can be both simultaneously
+                          </div>
                         </div>
-                        <div class="hier-badge">Entity</div>
+                        <div class="hier-badge">Role</div>
+                      </div>
+                      <div style="display: flex">
+                        <div class="hier-indent"></div>
+                        <div style="flex: 1">
+                          <div class="hier-row" style="margin-bottom: 0">
+                            <div>
+                              <div class="hier-name">application</div>
+                              <div class="hier-desc">
+                                customerID + leadID + opportunityID
+                              </div>
+                            </div>
+                            <div class="hier-badge">Entity</div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1123,438 +2129,1510 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- LSP Rules -->
-      <div>
-        <h3>§ 3.2 LSP-Specific Rules</h3>
-        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
-          <div class="card">
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-              <div style="width:28px; height:28px; background: rgba(79,110,247,0.15); border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-              </div>
-              <p style="font-size:13.5px; color:var(--muted2);">Maximum loan tenure is fixed at <strong style="color:var(--text);">3 years</strong> as set by the Lender (DSP Finance). LSPs can set their own tenure within this limit.</p>
-            </div>
-          </div>
-          <div class="card">
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-              <div style="width:28px; height:28px; background: rgba(6,214,160,0.12); border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06d6a0" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <p style="font-size:13.5px; color:var(--muted2);">LSP creates the lead; the customer completes the opportunity journey on the loan offer page.</p>
-            </div>
-          </div>
-          <div class="card">
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-              <div style="width:28px; height:28px; background: rgba(245,158,11,0.12); border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              </div>
-              <p style="font-size:13.5px; color:var(--muted2);">LSPs can perform the flow in a different order subject to limitations. For example, some LSPs perform PAN fetch after KYC — but <strong style="color:var(--text);">mandate setup cannot be done before KYC</strong>.</p>
-            </div>
-          </div>
-          <div class="card">
-            <div style="display: flex; gap: 10px; align-items: flex-start;">
-              <div style="width:28px; height:28px; background: rgba(124,58,237,0.12); border-radius: 6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              </div>
-              <p style="font-size:13.5px; color:var(--muted2);">The high-level flow in §2 represents the journey on the Volt platform specifically.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- KYC -->
-<section id="kyc">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 4 — KYC Process</span>
-      <h2>Know Your Customer</h2>
-      <p class="section-desc">KYC is performed through DIGIO, Volt's KYC and mandate service provider. The journey covers four components.</p>
-    </div>
-
-    <div class="grid-2" style="margin-bottom: 1.5rem;">
-      <div class="kyc-component">
-        <div class="kyc-icon" style="background: rgba(79,110,247,0.15);">🏛️</div>
-        <div class="kyc-body">
-          <h4>Digilocker</h4>
-          <p>Pulls identity documents (Aadhaar, PAN card) directly from government repositories.</p>
-        </div>
-      </div>
-      <div class="kyc-component">
-        <div class="kyc-icon" style="background: rgba(6,214,160,0.12);">🏦</div>
-        <div class="kyc-body">
-          <h4>Additional Details</h4>
-          <p>Collects and validates supplementary bank account information for disbursement.</p>
-        </div>
-      </div>
-      <div class="kyc-component">
-        <div class="kyc-icon" style="background: rgba(245,158,11,0.12);">🤳</div>
-        <div class="kyc-body">
-          <h4>Selfie KYC</h4>
-          <p>Liveness check via camera to confirm the applicant matches their ID documents.</p>
-        </div>
-      </div>
-      <div class="kyc-component">
-        <div class="kyc-icon" style="background: rgba(124,58,237,0.12);">📋</div>
-        <div class="kyc-body">
-          <h4>KYC Summary</h4>
-          <p>Consolidated view of all KYC data collected, presented to the customer for confirmation.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="alert">
-      <span class="alert-icon">⚠️</span>
-      <div>If there are any discrepancies or deviations in KYC and customer-provided details, the application must be approved by support in the command center. Beyond a set deviation limit, the application is <strong>REJECTED</strong>.</div>
-    </div>
-  </div>
-</section>
-
-<!-- MANDATE -->
-<section id="mandate">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 5 — Mandate Setup</span>
-      <h2>Mandate Registration</h2>
-      <p class="section-desc">All mandates are registered through DIGIO. There are four mandate types available depending on the customer's preference. Mandates are used for automatic interest payments in the LMS and are <strong>compulsory</strong> for every loan account.</p>
-    </div>
-
-    <div class="grid-4">
-      <div class="mandate-card m1">
-        <div class="mandate-type" style="color:#818cf8;">API Mandate</div>
-        <div class="mandate-method">Debit / Credit / Aadhaar</div>
-        <div class="mandate-desc">Programmatic registration via DIGIO APIs. Supports debit, credit, or Aadhaar-based authentication.</div>
-      </div>
-      <div class="mandate-card m2">
-        <div class="mandate-type" style="color:var(--accent3);">UPI Mandate</div>
-        <div class="mandate-method">UPI Handle</div>
-        <div class="mandate-desc">Customers provide their UPI handle; used for payment collections through the UPI ecosystem.</div>
-      </div>
-      <div class="mandate-card m3">
-        <div class="mandate-type" style="color:var(--gold);">eSign Mandate</div>
-        <div class="mandate-method">Aadhaar → Bank Account</div>
-        <div class="mandate-desc">Aadhaar-based electronic signature linking the mandate to the customer's bank account.</div>
-      </div>
-      <div class="mandate-card m4">
-        <div class="mandate-type" style="color:var(--muted2);">Physical Mandate</div>
-        <div class="mandate-method">Paper Form</div>
-        <div class="mandate-desc">Customer completes and submits a physical form; used as a fallback when digital methods are unavailable.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- COLLATERAL -->
-<section id="collateral">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 6 — Collateral Pledging</span>
-      <h2>Pledging &amp; Key Terms</h2>
-      <p class="section-desc">Mutual fund units and securities are pledged as collateral before the loan account is created.</p>
-    </div>
-
-    <!-- Pledging Flow SVG -->
-    <div class="collateral-visual">
-      <svg viewBox="0 0 760 120" xmlns="http://www.w3.org/2000/svg" font-family="'Sora',sans-serif">
-        <defs>
-          <marker id="a2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-            <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340"/>
-          </marker>
-        </defs>
-        <!-- Step boxes -->
-        <rect x="10" y="30" width="120" height="60" rx="8" fill="#131629" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="70" y="57" text-anchor="middle" fill="#9ca3af" font-size="11" font-weight="600">Customer</text>
-        <text x="70" y="73" text-anchor="middle" fill="#9ca3af" font-size="11">Selects Folios</text>
-
-        <path d="M132 60 L158 60" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a2)"/>
-
-        <rect x="160" y="30" width="120" height="60" rx="8" fill="#131629" stroke="#4f6ef7" stroke-width="1.5"/>
-        <text x="220" y="57" text-anchor="middle" fill="#818cf8" font-size="11" font-weight="600">MFC / NSDL</text>
-        <text x="220" y="73" text-anchor="middle" fill="#9ca3af" font-size="11">OTP Fetch</text>
-
-        <path d="M282 60 L308 60" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a2)"/>
-
-        <rect x="310" y="30" width="130" height="60" rx="8" fill="#131629" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="375" y="52" text-anchor="middle" fill="#9ca3af" font-size="11" font-weight="600">Risk Approval</text>
-        <text x="375" y="67" text-anchor="middle" fill="#4b5563" font-size="10">Approved Funds</text>
-        <text x="375" y="81" text-anchor="middle" fill="#4b5563" font-size="10">List Checked</text>
-
-        <path d="M442 60 L468 60" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a2)"/>
-
-        <rect x="470" y="30" width="120" height="60" rx="8" fill="#131629" stroke="#06d6a0" stroke-width="1.5"/>
-        <text x="530" y="57" text-anchor="middle" fill="#06d6a0" font-size="11" font-weight="600">Lien Marked</text>
-        <text x="530" y="73" text-anchor="middle" fill="#9ca3af" font-size="10">Lien Ref # Generated</text>
-
-        <path d="M592 60 L618 60" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a2)"/>
-
-        <rect x="620" y="30" width="120" height="60" rx="8" fill="#131629" stroke="#1e2340" stroke-width="1.5"/>
-        <text x="680" y="52" text-anchor="middle" fill="#9ca3af" font-size="11" font-weight="600">Collateral ID</text>
-        <text x="680" y="67" text-anchor="middle" fill="#4b5563" font-size="10">ISIN + Folio +</text>
-        <text x="680" y="81" text-anchor="middle" fill="#4b5563" font-size="10">Lien Ref#</text>
-
-        <!-- Fallback label -->
-        <text x="220" y="108" text-anchor="middle" fill="#374151" font-size="10">Fallback: CAMS / KFINTECH RTAs</text>
-      </svg>
-    </div>
-
-    <!-- Key Terms -->
-    <h3 style="margin-top: 2rem; margin-bottom: 1rem;">§ 6.2 Key Financial Terms</h3>
-    <div class="grid-3" style="margin-bottom: 2rem;">
-      <div class="term-card">
-        <div class="term-abbr">POS</div>
-        <div class="term-name">Principal Outstanding</div>
-        <div class="term-def">The outstanding principal amount on the loan at any point in time.</div>
-      </div>
-      <div class="term-card">
-        <div class="term-abbr">DP</div>
-        <div class="term-name">Drawing Power</div>
-        <div class="term-def">Maximum amount the customer can draw against the pledged collateral; recalculated daily.</div>
-      </div>
-      <div class="term-card">
-        <div class="term-abbr">TOS</div>
-        <div class="term-name">Total Outstanding</div>
-        <div class="term-def">Total outstanding funds to be paid by the customer — includes POS and any fees / interest accrued.</div>
-      </div>
-      <div class="term-card">
-        <div class="term-abbr">SL</div>
-        <div class="term-name">Sanctioned Limit</div>
-        <div class="term-def">Total funds the customer can theoretically borrow. Set at ₹2 Cr or ₹5 Cr depending on need.</div>
-      </div>
-      <div class="term-card">
-        <div class="term-abbr">AL</div>
-        <div class="term-name">Available Limit</div>
-        <div class="term-def">Funds available for withdrawal at the current DP. Calculated as <code style="font-family:var(--mono); font-size:12px; color:var(--accent);">DP − TOS</code>.</div>
-      </div>
-    </div>
-
-    <!-- KFS & Loan Agreement -->
-    <h3 style="margin-bottom: 1rem;">§ 6.3 KFS &amp; Loan Agreement</h3>
-    <div class="grid-2">
-      <div class="card">
-        <div style="display:flex; gap:10px; align-items:flex-start;">
-          <div style="width:36px; height:36px; background:rgba(79,110,247,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📄</div>
+          <!-- LSP Rules -->
           <div>
-            <h4 style="font-size:14px; margin-bottom:6px;">Key Fact Statement (KFS)</h4>
-            <p style="font-size:13px; color:var(--muted2);">A standardised summary of loan terms, fees, and charges mandated by the regulator. Must be reviewed and accepted before loan sanction.</p>
+            <h3>§ 3.2 LSP-Specific Rules</h3>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+              "
+            >
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      background: rgba(79, 110, 247, 0.15);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#818cf8"
+                      stroke-width="2"
+                    >
+                      <path
+                        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                      />
+                    </svg>
+                  </div>
+                  <p style="font-size: 13.5px; color: var(--muted2)">
+                    Maximum loan tenure is fixed at
+                    <strong style="color: var(--text)">3 years</strong> as set
+                    by the Lender (DSP Finance). LSPs can set their own tenure
+                    within this limit.
+                  </p>
+                </div>
+              </div>
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      background: rgba(6, 214, 160, 0.12);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#06d6a0"
+                      stroke-width="2"
+                    >
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                  </div>
+                  <p style="font-size: 13.5px; color: var(--muted2)">
+                    LSP creates the lead; the customer completes the opportunity
+                    journey on the loan offer page.
+                  </p>
+                </div>
+              </div>
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      background: rgba(245, 158, 11, 0.12);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#f59e0b"
+                      stroke-width="2"
+                    >
+                      <polyline points="23 4 23 10 17 10" />
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                    </svg>
+                  </div>
+                  <p style="font-size: 13.5px; color: var(--muted2)">
+                    LSPs can perform the flow in a different order subject to
+                    limitations. For example, some LSPs perform PAN fetch after
+                    KYC — but
+                    <strong style="color: var(--text)"
+                      >mandate setup cannot be done before KYC</strong
+                    >.
+                  </p>
+                </div>
+              </div>
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 28px;
+                      height: 28px;
+                      background: rgba(124, 58, 237, 0.12);
+                      border-radius: 6px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      flex-shrink: 0;
+                    "
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#a78bfa"
+                      stroke-width="2"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </div>
+                  <p style="font-size: 13.5px; color: var(--muted2)">
+                    The high-level flow in §2 represents the journey on the Volt
+                    platform specifically.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div class="card">
-        <div style="display:flex; gap:10px; align-items:flex-start;">
-          <div style="width:36px; height:36px; background:rgba(6,214,160,0.12); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">📝</div>
+    </section>
+
+    <!-- KYC -->
+    <section id="kyc">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 4 — KYC Process</span>
+          <h2>Know Your Customer</h2>
+          <p class="section-desc">
+            KYC is performed through DIGIO, Volt's KYC and mandate service
+            provider. The journey covers four components.
+          </p>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 1.5rem">
+          <div class="kyc-component">
+            <div class="kyc-icon" style="background: rgba(79, 110, 247, 0.15)">
+              🏛️
+            </div>
+            <div class="kyc-body">
+              <h4>Digilocker</h4>
+              <p>
+                Pulls identity documents (Aadhaar, PAN card) directly from
+                government repositories.
+              </p>
+            </div>
+          </div>
+          <div class="kyc-component">
+            <div class="kyc-icon" style="background: rgba(6, 214, 160, 0.12)">
+              🏦
+            </div>
+            <div class="kyc-body">
+              <h4>Additional Details</h4>
+              <p>
+                Collects and validates supplementary customer information
+                required for downstream onboarding.
+              </p>
+            </div>
+          </div>
+          <div class="kyc-component">
+            <div class="kyc-icon" style="background: rgba(245, 158, 11, 0.12)">
+              🤳
+            </div>
+            <div class="kyc-body">
+              <h4>Selfie KYC</h4>
+              <p>
+                Liveness check via camera to confirm the applicant matches their
+                ID documents.
+              </p>
+            </div>
+          </div>
+          <div class="kyc-component">
+            <div class="kyc-icon" style="background: rgba(124, 58, 237, 0.12)">
+              📋
+            </div>
+            <div class="kyc-body">
+              <h4>KYC Summary</h4>
+              <p>
+                Consolidated view of all KYC data collected, presented to the
+                customer for confirmation.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert">
+          <span class="alert-icon">⚠️</span>
           <div>
-            <h4 style="font-size:14px; margin-bottom:6px;">Loan Agreement</h4>
-            <p style="font-size:13px; color:var(--muted2);">The binding contract between the customer and Volt Money governing the credit facility. Must be accepted before loan sanction.</p>
+            If there are any discrepancies or deviations in KYC and
+            customer-provided details, the application must be approved by
+            support in the command center. Beyond a set deviation limit, the
+            application is <strong>REJECTED</strong>.
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- LOAN CREATION -->
-<section id="loan-creation">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 7 — Loan Account Creation</span>
-      <h2>LOS → LMS Handoff</h2>
-      <p class="section-desc">Once all LOS steps are complete, the client and loan account are created and handed off to the Loan Management Service.</p>
-    </div>
-
-    <div class="grid-2">
-      <!-- Credit Approval -->
-      <div>
-        <h3 style="margin-bottom: 1rem;">§ 7.1 Credit Approval (BRE)</h3>
-        <p style="font-size:13.5px; color:var(--muted2); margin-bottom: 1.25rem;">Credit Approval is the final step of the LOS pipeline. The Business Rule Engine (BRE) runs automated credit decisioning based on:</p>
-        <div class="bce-factors" style="margin-top: 0;">
-          <div class="bce-factor">
-            <h4>Risk Profile</h4>
-            <p>Customer risk profile and KYC data evaluated against credit policy.</p>
-          </div>
-          <div class="bce-factor" style="border-top-color: var(--accent3);">
-            <h4>Collateral Quality</h4>
-            <p>Fund category, applicable haircuts, and quality of pledged securities.</p>
-          </div>
-          <div class="bce-factor" style="border-top-color: var(--gold);">
-            <h4>Regulatory Parameters</h4>
-            <p>Regulatory and internal credit policy parameters applied automatically.</p>
-          </div>
+    <!-- BANK -->
+    <section id="bank">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 4.1 — Bank Verification</span>
+          <h2>Bank Details</h2>
+          <p class="section-desc">
+            Bank account details are captured from the user, then verified via
+            penny-drop testing. We also match the user's PAN name with the bank
+            account holder name; if there is a mismatch, the system shows a
+            prominent warning and blocks progress until the user corrects/aligns
+            the details (strict validation to ensure it matches).
+          </p>
         </div>
-        <div style="margin-top: 1.25rem;">
-          <p style="font-size:13px; color:var(--muted2); margin-bottom: 0.5rem;">On approval, the opportunity status transitions to:</p>
-          <span class="status-badge">✓ APPROVED_NOT_DISBURSED</span>
-          <p style="font-size:13px; color:var(--muted2); margin-top: 0.5rem;">The loan account becomes active in LMS.</p>
-        </div>
-      </div>
 
-      <!-- Client Creation -->
-      <div>
-        <h3 style="margin-bottom: 1rem;">§ 7.2 Client Creation</h3>
-        <div class="card" style="margin-bottom: 1rem;">
-          <div style="display:flex; gap:10px; align-items:flex-start;">
-            <div style="width:32px; height:32px; background:rgba(79,110,247,0.15); border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            </div>
-            <div>
-              <code style="font-family:var(--mono); font-size:13px; color:var(--accent); display:block; margin-bottom:6px;">POST /create-customer</code>
-              <p style="font-size:13px; color:var(--muted2);">Called to register the customer entity. This is the first LMS entity created and marks the formal transition from origination to servicing.</p>
-            </div>
-          </div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:0.75rem;">
-          <div style="display:flex; gap:8px; align-items:flex-start; font-size:13.5px; color:var(--muted2);">
-            <span style="color:var(--accent3); flex-shrink:0; margin-top:2px;">→</span>
-            Customer profile persisted with KYC data, bank details, and mandate references.
-          </div>
-          <div style="display:flex; gap:8px; align-items:flex-start; font-size:13.5px; color:var(--muted2);">
-            <span style="color:var(--accent3); flex-shrink:0; margin-top:2px;">→</span>
-            A client record is lodged in <strong style="color:var(--text);">Finflux</strong> (the core LMS platform).
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- INTEGRATIONS -->
-<section id="integrations">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 8 — Third-Party Integrations</span>
-      <h2>External Providers</h2>
-      <p class="section-desc">Volt Money integrates with the following third-party providers across the LOS pipeline.</p>
-    </div>
-
-    <div class="grid-3">
-      <div class="integration-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          <div class="int-provider">Dcentro / NSDL</div>
-          <span style="font-size:10px; background:rgba(245,158,11,0.12); color:var(--gold); padding:3px 8px; border-radius:4px; font-weight:600;">Migrating</span>
-        </div>
-        <div class="int-role">PAN Fetch</div>
-        <div class="int-note">Customer PAN details fetched via Dcentro; migration to NSDL in progress.</div>
-      </div>
-      <div class="integration-card">
-        <div class="int-provider">MFC</div>
-        <div class="int-role">Mutual Fund Fetch</div>
-        <div class="int-note">OTP-based service to retrieve all mutual fund folios linked to the customer's mobile number. Acts as a wrapper on both CAMS and KFINTECH.</div>
-      </div>
-      <div class="integration-card">
-        <div class="int-provider">CAMS</div>
-        <div class="int-role">Mutual Fund Fetch</div>
-        <div class="int-note">OTP-based service to retrieve all mutual fund folios linked to the customer's mobile number.</div>
-      </div>
-      <div class="integration-card">
-        <div class="int-provider">KFINTECH</div>
-        <div class="int-role">Mutual Fund Fetch</div>
-        <div class="int-note">OTP-based service to retrieve all mutual fund folios linked to the customer's mobile number.</div>
-      </div>
-      <div class="integration-card" style="border-color: rgba(79,110,247,0.3);">
-        <div class="int-provider" style="color:#818cf8;">DIGIO</div>
-        <div class="int-role">KYC &amp; Mandates</div>
-        <div class="int-note">End-to-end KYC (Digilocker, selfie, bank details) and all mandate types (API, UPI, eSign, physical).</div>
-      </div>
-      <div class="integration-card" style="border-color: rgba(6,214,160,0.2);">
-        <div class="int-provider" style="color:var(--accent3);">Finflux</div>
-        <div class="int-role">LMS Core Platform</div>
-        <div class="int-note">Core Loan Management System where client records are lodged after LOS completion and loan accounts are managed.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- USER TYPES -->
-<section id="users">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-tag">§ 9 — User Types &amp; Partner Model</span>
-      <h2>Roles &amp; Affiliate Structure</h2>
-    </div>
-
-    <div class="grid-2">
-      <!-- User Classifications -->
-      <div>
-        <h3 style="margin-bottom: 1rem;">§ 9.1 User Classifications</h3>
-        <div style="display:flex; flex-direction:column; gap:1rem;">
+        <div class="grid-3" style="margin-bottom: 2rem">
           <div class="card">
-            <div style="display:flex; gap:10px; align-items:flex-start;">
-              <div style="width:36px; height:36px; background:rgba(79,110,247,0.15); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🏢</div>
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  background: rgba(79, 110, 247, 0.15);
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                "
+              >
+                💸
+              </div>
               <div>
-                <h4 style="font-size:14px; margin-bottom:4px;">Partner</h4>
-                <p style="font-size:13px; color:var(--muted2);">An affiliate or business entity that refers customers to Volt Money via the affiliate system.</p>
+                <h4 style="font-size: 14px; margin-bottom: 6px">
+                  Penny Drop Testing
+                </h4>
+                <p style="font-size: 13px; color: var(--muted2)">
+                  A micro-transaction confirms the bank account exists and is
+                  reachable for subsequent mandate registration.
+                </p>
               </div>
             </div>
           </div>
+
           <div class="card">
-            <div style="display:flex; gap:10px; align-items:flex-start;">
-              <div style="width:36px; height:36px; background:rgba(6,214,160,0.12); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">👤</div>
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  background: rgba(6, 214, 160, 0.12);
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                "
+              >
+                🔎
+              </div>
               <div>
-                <h4 style="font-size:14px; margin-bottom:4px;">Borrower</h4>
-                <p style="font-size:13px; color:var(--muted2);">Any user who has an active or in-progress loan application.</p>
+                <h4 style="font-size: 14px; margin-bottom: 6px">
+                  PAN vs Bank Name Match
+                </h4>
+                <p style="font-size: 13px; color: var(--muted2)">
+                  We compare the PAN name (as captured via PAN fetch/KYC)
+                  against the bank account holder name before proceeding.
+                </p>
               </div>
             </div>
           </div>
-          <div class="alert" style="margin-top: 0;">
-            <span class="alert-icon">ℹ️</span>
-            <div style="color:var(--muted2);">A user can be both a <strong style="color:var(--text);">partner</strong> and a <strong style="color:var(--text);">borrower</strong> at the same time.</div>
+
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  background: rgba(245, 158, 11, 0.12);
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                "
+              >
+                🚫
+              </div>
+              <div>
+                <h4 style="font-size: 14px; margin-bottom: 6px">
+                  Mismatch Handling
+                </h4>
+                <p style="font-size: 13px; color: var(--muted2)">
+                  If names do not match, the user is shown a high-visibility
+                  warning and required to re-confirm/update details until
+                  alignment is achieved.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert" style="margin-top: 0">
+          <span class="alert-icon">⚠️</span>
+          <div>
+            Mandate setup can only proceed after penny-drop success and PAN-name
+            / bank-name match are both validated.
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Partner Model -->
-      <div>
-        <h3 style="margin-bottom: 1rem;">§ 9.2 Partner Affiliate Model</h3>
-        <p style="font-size:13.5px; color:var(--muted2); margin-bottom: 1.25rem;">Partners direct customers to Volt Money and are tracked through a sourcing channel attribute on the lead record. The origination flow is identical for partner-referred customers, but the lead carries the partner's sourcing channel identifier, enabling attribution and commission tracking.</p>
+    <!-- MANDATE -->
+    <section id="mandate">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 5 — Mandate Setup</span>
+          <h2>Mandate Registration</h2>
+          <p class="section-desc">
+            All mandates are registered through DIGIO. There are four mandate
+            types available depending on the customer's preference. Mandates are
+            used for automatic interest payments in the LMS and are
+            <strong>compulsory</strong> for every loan account.
+          </p>
+        </div>
 
-        <!-- Mini flow SVG -->
-        <div class="arch-diagram" style="padding: 1.25rem;">
-          <svg viewBox="0 0 480 100" xmlns="http://www.w3.org/2000/svg" font-family="'Sora',sans-serif">
+        <div class="grid-4">
+          <div class="mandate-card m1">
+            <div class="mandate-type" style="color: #818cf8">API Mandate</div>
+            <div class="mandate-method">Debit / Credit / Aadhaar</div>
+            <div class="mandate-desc">
+              Programmatic registration via DIGIO APIs. Supports debit, credit,
+              or Aadhaar-based authentication.
+            </div>
+          </div>
+          <div class="mandate-card m2">
+            <div class="mandate-type" style="color: var(--accent3)">
+              UPI Mandate
+            </div>
+            <div class="mandate-method">UPI Handle</div>
+            <div class="mandate-desc">
+              Customers provide their UPI handle; used for payment collections
+              through the UPI ecosystem.
+            </div>
+          </div>
+          <div class="mandate-card m3">
+            <div class="mandate-type" style="color: var(--gold)">
+              eSign Mandate
+            </div>
+            <div class="mandate-method">Aadhaar → Bank Account</div>
+            <div class="mandate-desc">
+              Aadhaar-based electronic signature linking the mandate to the
+              customer's bank account.
+            </div>
+          </div>
+          <div class="mandate-card m4">
+            <div class="mandate-type" style="color: var(--muted2)">
+              Physical Mandate
+            </div>
+            <div class="mandate-method">Paper Form</div>
+            <div class="mandate-desc">
+              Customer completes and submits a physical form; used as a fallback
+              when digital methods are unavailable.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COLLATERAL -->
+    <section id="collateral">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 6 — Collateral Pledging</span>
+          <h2>Pledging &amp; Key Terms</h2>
+          <p class="section-desc">
+            Mutual fund units and securities are pledged as collateral before
+            the loan account is created.
+          </p>
+        </div>
+
+        <!-- Pledging Flow SVG -->
+        <div class="collateral-visual">
+          <svg
+            viewBox="0 0 760 120"
+            xmlns="http://www.w3.org/2000/svg"
+            font-family="'Sora',sans-serif"
+          >
             <defs>
-              <marker id="a3" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-                <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340"/>
+              <marker
+                id="a2"
+                markerWidth="6"
+                markerHeight="6"
+                refX="6"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340" />
               </marker>
             </defs>
-            <rect x="10" y="25" width="100" height="50" rx="8" fill="#0f1120" stroke="#06d6a0" stroke-width="1.5"/>
-            <text x="60" y="53" text-anchor="middle" fill="#06d6a0" font-size="12" font-weight="600">Partner</text>
+            <!-- Step boxes -->
+            <rect
+              x="10"
+              y="30"
+              width="120"
+              height="60"
+              rx="8"
+              fill="#131629"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="70"
+              y="57"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+              font-weight="600"
+            >
+              Customer
+            </text>
+            <text
+              x="70"
+              y="73"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+            >
+              Selects Folios
+            </text>
 
-            <path d="M112 50 L148 50" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a3)"/>
-            <text x="130" y="44" text-anchor="middle" fill="#4b5563" font-size="9">refers</text>
+            <path
+              d="M132 60 L158 60"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#a2)"
+            />
 
-            <rect x="150" y="25" width="100" height="50" rx="8" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-            <text x="200" y="53" text-anchor="middle" fill="#9ca3af" font-size="12" font-weight="600">Customer</text>
+            <rect
+              x="160"
+              y="30"
+              width="120"
+              height="60"
+              rx="8"
+              fill="#131629"
+              stroke="#4f6ef7"
+              stroke-width="1.5"
+            />
+            <text
+              x="220"
+              y="57"
+              text-anchor="middle"
+              fill="#818cf8"
+              font-size="11"
+              font-weight="600"
+            >
+              MFC / NSDL
+            </text>
+            <text
+              x="220"
+              y="73"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+            >
+              OTP Fetch
+            </text>
 
-            <path d="M252 50 L288 50" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a3)"/>
-            <text x="270" y="44" text-anchor="middle" fill="#4b5563" font-size="9">applies</text>
+            <path
+              d="M282 60 L308 60"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#a2)"
+            />
 
-            <rect x="290" y="10" width="120" height="80" rx="8" fill="#131629" stroke="#4f6ef7" stroke-width="1.5"/>
-            <text x="350" y="44" text-anchor="middle" fill="#818cf8" font-size="11" font-weight="600">Volt Money LOS</text>
-            <text x="350" y="60" text-anchor="middle" fill="#4b5563" font-size="9">sourcing channel</text>
-            <text x="350" y="72" text-anchor="middle" fill="#4b5563" font-size="9">tracked on lead</text>
+            <rect
+              x="310"
+              y="30"
+              width="130"
+              height="60"
+              rx="8"
+              fill="#131629"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="375"
+              y="52"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+              font-weight="600"
+            >
+              Risk Approval
+            </text>
+            <text
+              x="375"
+              y="67"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              Approved Funds
+            </text>
+            <text
+              x="375"
+              y="81"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              List Checked
+            </text>
 
-            <path d="M412 50 L435 50" stroke="#1e2340" stroke-width="1.5" marker-end="url(#a3)"/>
-            <rect x="437" y="25" width="36" height="50" rx="8" fill="#0f1120" stroke="#1e2340" stroke-width="1.5"/>
-            <text x="455" y="48" text-anchor="middle" fill="#9ca3af" font-size="9">Attr.</text>
-            <text x="455" y="62" text-anchor="middle" fill="#9ca3af" font-size="9">+Comm.</text>
+            <path
+              d="M442 60 L468 60"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#a2)"
+            />
+
+            <rect
+              x="470"
+              y="30"
+              width="120"
+              height="60"
+              rx="8"
+              fill="#131629"
+              stroke="#06d6a0"
+              stroke-width="1.5"
+            />
+            <text
+              x="530"
+              y="57"
+              text-anchor="middle"
+              fill="#06d6a0"
+              font-size="11"
+              font-weight="600"
+            >
+              Lien Marked
+            </text>
+            <text
+              x="530"
+              y="73"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="10"
+            >
+              Lien Ref # Generated
+            </text>
+
+            <path
+              d="M592 60 L618 60"
+              stroke="#1e2340"
+              stroke-width="1.5"
+              marker-end="url(#a2)"
+            />
+
+            <rect
+              x="620"
+              y="30"
+              width="120"
+              height="60"
+              rx="8"
+              fill="#131629"
+              stroke="#1e2340"
+              stroke-width="1.5"
+            />
+            <text
+              x="680"
+              y="52"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="11"
+              font-weight="600"
+            >
+              Collateral ID
+            </text>
+            <text
+              x="680"
+              y="67"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              ISIN + Folio +
+            </text>
+            <text
+              x="680"
+              y="81"
+              text-anchor="middle"
+              fill="#4b5563"
+              font-size="10"
+            >
+              Lien Ref#
+            </text>
+
+            <!-- Fallback label -->
+            <text
+              x="220"
+              y="108"
+              text-anchor="middle"
+              fill="#374151"
+              font-size="10"
+            >
+              Fallback: CAMS / KFINTECH RTAs
+            </text>
           </svg>
         </div>
+
+        <!-- Key Terms -->
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem">
+          § 6.2 Key Financial Terms
+        </h3>
+        <div class="grid-3" style="margin-bottom: 2rem">
+          <div class="term-card">
+            <div class="term-abbr">POS</div>
+            <div class="term-name">Principal Outstanding</div>
+            <div class="term-def">
+              The outstanding principal amount on the loan at any point in time.
+            </div>
+          </div>
+          <div class="term-card">
+            <div class="term-abbr">DP</div>
+            <div class="term-name">Drawing Power</div>
+            <div class="term-def">
+              Maximum amount the customer can draw against the pledged
+              collateral; recalculated daily.
+            </div>
+          </div>
+          <div class="term-card">
+            <div class="term-abbr">TOS</div>
+            <div class="term-name">Total Outstanding</div>
+            <div class="term-def">
+              Total outstanding funds to be paid by the customer — includes POS
+              and any fees / interest accrued.
+            </div>
+          </div>
+          <div class="term-card">
+            <div class="term-abbr">SL</div>
+            <div class="term-name">Sanctioned Limit</div>
+            <div class="term-def">
+              Total funds the customer can theoretically borrow. Set at ₹2 Cr or
+              ₹5 Cr depending on need.
+            </div>
+          </div>
+          <div class="term-card">
+            <div class="term-abbr">AL</div>
+            <div class="term-name">Available Limit</div>
+            <div class="term-def">
+              Funds available for withdrawal at the current DP. Calculated as
+              <code
+                style="
+                  font-family: var(--mono);
+                  font-size: 12px;
+                  color: var(--accent);
+                "
+                >DP − TOS</code
+              >.
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- FOOTER -->
-<footer>
-  <div class="container">
-    <p><strong>Volt Money — Loan Against Mutual Funds &amp; Securities</strong></p>
-    <p style="margin-top: 8px;">Loan Onboarding Service (LOS) — Technical Specification | Scope: LOS Only</p>
-    <p style="margin-top: 6px; font-size: 11px;">Confidential | Internal Use Only · LMS (Loan Management Service) documentation to follow.</p>
-  </div>
-</footer>
+    <!-- KFS & LOAN AGREEMENT -->
+    <section id="kfs-agreement">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 7 — KFS &amp; Loan Agreement</span>
+          <h2>Key Fact Statement (KFS) &amp; Agreement Acceptance</h2>
+          <p class="section-desc">
+            After pledging, the customer reviews and accepts the
+            regulator-mandated Key Fact Statement (KFS) and the binding loan
+            agreement before proceeding in the LOS pipeline.
+          </p>
+        </div>
 
-</body>
+        <div class="grid-2">
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  background: rgba(79, 110, 247, 0.15);
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                "
+              >
+                📄
+              </div>
+              <div>
+                <h4 style="font-size: 14px; margin-bottom: 6px">
+                  § 7.1 Key Fact Statement (KFS)
+                </h4>
+                <p style="font-size: 13px; color: var(--muted2)">
+                  A standardised summary of loan terms, fees, and charges
+                  mandated by the regulator. Must be reviewed and accepted
+                  before loan sanction.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="display: flex; gap: 10px; align-items: flex-start">
+              <div
+                style="
+                  width: 36px;
+                  height: 36px;
+                  background: rgba(6, 214, 160, 0.12);
+                  border-radius: 8px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                  flex-shrink: 0;
+                "
+              >
+                📝
+              </div>
+              <div>
+                <h4 style="font-size: 14px; margin-bottom: 6px">
+                  § 7.2 Loan Agreement
+                </h4>
+                <p style="font-size: 13px; color: var(--muted2)">
+                  The binding contract between the customer and Volt Money
+                  governing the credit facility. Must be accepted before loan
+                  sanction.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOAN CREATION -->
+    <section id="loan-creation">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 8 — Loan Account Creation</span>
+          <h2>LOS → LMS Handoff</h2>
+          <p class="section-desc">
+            Once all LOS steps are complete, the client and loan account are
+            created and handed off to the Loan Management Service.
+          </p>
+        </div>
+
+        <div class="display:flex; gap:0.75rem;">
+          <!-- Credit Approval -->
+          <div>
+            <h3 style="margin-bottom: 1rem; margin-top: 2rem">
+              § 8.1 Credit Approval (BRE)
+            </h3>
+            <p
+              style="
+                font-size: 13.5px;
+                color: var(--muted2);
+                margin-bottom: 1.25rem;
+              "
+            >
+              Credit Approval is the final step of the LOS pipeline. The
+              Business Rule Engine (BRE) runs automated credit decisioning based
+              on:
+            </p>
+            <div class="bce-factors" style="margin-top: 0">
+              <div class="bce-factor">
+                <h4>Risk Profile</h4>
+                <p>
+                  Customer risk profile and KYC data evaluated against credit
+                  policy.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--accent3)">
+                <h4>Collateral Quality</h4>
+                <p>
+                  Fund category, applicable haircuts, and quality of pledged
+                  securities.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--gold)">
+                <h4>Regulatory Parameters</h4>
+                <p>
+                  Regulatory and internal credit policy parameters applied
+                  automatically.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--accent)">
+                <h4>DSP Dedupe Check</h4>
+                <p>
+                  Prevents duplicate loan applications by deduping
+                  DSP-originated submissions.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--accent3)">
+                <h4>Platform Check</h4>
+                <p>
+                  Evaluates restrictions and preferences for the
+                  customer/application on the platform.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--gold)">
+                <h4>PF (Processing Fee)</h4>
+                <p>
+                  Processing fee rules applied as per product policy and
+                  eligibility.
+                </p>
+              </div>
+              <div class="bce-factor" style="border-top-color: var(--los)">
+                <h4>ROI (Rate of Interest)</h4>
+                <p>
+                  Rate-of-interest selection and validation based on
+                  tenure/product parameters.
+                </p>
+              </div>
+            </div>
+            <div style="margin-top: 1.25rem">
+              <p
+                style="
+                  font-size: 13px;
+                  color: var(--muted2);
+                  margin-bottom: 0.5rem;
+                "
+              >
+                On approval, the opportunity status transitions to:
+              </p>
+              <span class="status-badge">✓ APPROVED_NOT_DISBURSED</span>
+              <p
+                style="
+                  font-size: 13px;
+                  color: var(--muted2);
+                  margin-top: 0.5rem;
+                "
+              >
+                The loan account becomes active in LMS.
+              </p>
+            </div>
+          </div>
+
+          <!-- Client Creation -->
+          <div>
+            <h3 style="margin-bottom: 1rem; margin-top: 2rem">
+              § 8.2 Client Creation
+            </h3>
+            <div class="card" style="margin-bottom: 1rem">
+              <div style="display: flex; gap: 10px; align-items: flex-start">
+                <div
+                  style="
+                    width: 32px;
+                    height: 32px;
+                    background: rgba(79, 110, 247, 0.15);
+                    border-radius: 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex-shrink: 0;
+                  "
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#818cf8"
+                    stroke-width="2"
+                  >
+                    <path
+                      d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                    />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                </div>
+                <div>
+                  <code
+                    style="
+                      font-family: var(--mono);
+                      font-size: 13px;
+                      color: var(--accent);
+                      display: block;
+                      margin-bottom: 6px;
+                    "
+                    >POST /create-customer</code
+                  >
+                  <p style="font-size: 13px; color: var(--muted2)">
+                    Called to register the customer entity. This is the first
+                    LMS entity created and marks the formal transition from
+                    origination to servicing.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem">
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  align-items: flex-start;
+                  font-size: 13.5px;
+                  color: var(--muted2);
+                "
+              >
+                <span
+                  style="color: var(--accent3); flex-shrink: 0; margin-top: 2px"
+                  >→</span
+                >
+                Customer profile persisted with KYC data, bank details, and
+                mandate references.
+              </div>
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  align-items: flex-start;
+                  font-size: 13.5px;
+                  color: var(--muted2);
+                "
+              >
+                <span
+                  style="color: var(--accent3); flex-shrink: 0; margin-top: 2px"
+                  >→</span
+                >
+                A client record is lodged in
+                <strong style="color: var(--text)">Finflux</strong> (the core
+                LMS platform).
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Status Flow -->
+          <div>
+            <h3 style="margin-bottom: 1rem; margin-top: 2rem">
+              § 8.3 Credit Status Flow on Volt
+            </h3>
+            <div class="wrapper">
+              <div class="flow-row">
+                <!-- Node 1 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #22d3ee">
+                      Pending Disbursal Approval
+                    </div>
+                    <div class="tooltip-desc">
+                      Loan has not yet been created. Awaiting approval before
+                      any further steps.
+                    </div>
+                  </div>
+                  <div class="node node-pending-disbursal">
+                    <div class="node-abbr">PDA</div>
+                    <div class="node-title">Pending Disbursal Approval</div>
+                  </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-wrap"><div class="arrow-line"></div></div>
+
+                <!-- Node 2 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #0ea5e9">
+                      Pending Lodgement
+                    </div>
+                    <div class="tooltip-desc">
+                      Loan created but collaterals have not been lodged yet.
+                    </div>
+                  </div>
+                  <div class="node node-pending-lodge">
+                    <div class="node-abbr">PL</div>
+                    <div class="node-title">Pending Lodgement</div>
+                  </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-wrap"><div class="arrow-line"></div></div>
+
+                <!-- Node 3 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #8b5cf6">
+                      Approved, Not Disbursed
+                    </div>
+                    <div class="tooltip-desc">
+                      Collaterals have been lodged and DP computed, but funds
+                      have not yet been disbursed.
+                    </div>
+                  </div>
+                  <div class="node node-approved-not-disbursed">
+                    <div class="node-abbr">AND</div>
+                    <div class="node-title">Approved, Not Disbursed</div>
+                  </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-wrap"><div class="arrow-line"></div></div>
+
+                <!-- Node 4 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #34d399">
+                      Active
+                    </div>
+                    <div class="tooltip-desc">
+                      First disbursal has been completed. Loan is live —
+                      interest accruing, repayments accepted.
+                    </div>
+                  </div>
+                  <div class="node node-active">
+                    <div class="node-abbr">
+                      <span class="active-dot"></span>ACTIVE
+                    </div>
+                    <div class="node-title">Active</div>
+                  </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-wrap"><div class="arrow-line"></div></div>
+
+                <!-- Node 5 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #fbbf24">
+                      Pending Closure
+                    </div>
+                    <div class="tooltip-desc">
+                      Foreclosure request initiated. TOS settlement in progress
+                      before full closure.
+                    </div>
+                  </div>
+                  <div class="node node-pending-closure">
+                    <div class="node-abbr">PC</div>
+                    <div class="node-title">Pending Closure</div>
+                  </div>
+                </div>
+
+                <!-- Arrow -->
+                <div class="arrow-wrap"><div class="arrow-line"></div></div>
+
+                <!-- Node 6 -->
+                <div class="node-wrap">
+                  <div class="tooltip-box">
+                    <div class="tooltip-label" style="color: #e2e8f0">
+                      Closed
+                    </div>
+                    <div class="tooltip-desc">
+                      TOS = 0. Loan fully settled. All pledged collateral units
+                      returned to customer folio.
+                    </div>
+                  </div>
+                  <div class="node node-closed">
+                    <div class="node-abbr">✓ CLOSED</div>
+                    <div class="node-title">Loan Closed</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="legend">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #22d3ee"></div>
+                  Pending Disbursal Approval
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #0ea5e9"></div>
+                  Pending Lodgement
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #8b5cf6"></div>
+                  Approved Not Disbursed
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #10b981"></div>
+                  Active
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #f59e0b"></div>
+                  Pending Closure
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background: #22d3ee"></div>
+                  Closed
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRATIONS -->
+    <section id="integrations">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 9 — Third-Party Integrations</span>
+          <h2>External Providers</h2>
+          <p class="section-desc">
+            Volt Money integrates with the following third-party providers
+            across the LOS pipeline.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <div class="integration-card">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+              "
+            >
+              <div class="int-provider">Dcentro / NSDL</div>
+              <span
+                style="
+                  font-size: 10px;
+                  background: rgba(245, 158, 11, 0.12);
+                  color: var(--gold);
+                  padding: 3px 8px;
+                  border-radius: 4px;
+                  font-weight: 600;
+                "
+                >Migrating</span
+              >
+            </div>
+            <div class="int-role">PAN Fetch</div>
+            <div class="int-note">
+              Customer PAN details fetched via Dcentro; migration to NSDL in
+              progress.
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-provider">MFC</div>
+            <div class="int-role">Mutual Fund Fetch</div>
+            <div class="int-note">
+              OTP-based service to retrieve all mutual fund folios linked to the
+              customer's mobile number. Acts as a wrapper on both CAMS and
+              KFINTECH.
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-provider">CAMS</div>
+            <div class="int-role">Mutual Fund Fetch</div>
+            <div class="int-note">
+              OTP-based service to retrieve all mutual fund folios linked to the
+              customer's mobile number.
+            </div>
+          </div>
+          <div class="integration-card">
+            <div class="int-provider">KFINTECH</div>
+            <div class="int-role">Mutual Fund Fetch</div>
+            <div class="int-note">
+              OTP-based service to retrieve all mutual fund folios linked to the
+              customer's mobile number.
+            </div>
+          </div>
+          <div
+            class="integration-card"
+            style="border-color: rgba(79, 110, 247, 0.3)"
+          >
+            <div class="int-provider" style="color: #818cf8">DIGIO</div>
+            <div class="int-role">KYC &amp; Mandates</div>
+            <div class="int-note">
+              End-to-end KYC (Digilocker, selfie, bank details) and all mandate
+              types (API, UPI, eSign, physical).
+            </div>
+          </div>
+          <div
+            class="integration-card"
+            style="border-color: rgba(6, 214, 160, 0.2)"
+          >
+            <div class="int-provider" style="color: var(--accent3)">
+              Finflux
+            </div>
+            <div class="int-role">LMS Core Platform</div>
+            <div class="int-note">
+              Core Loan Management System where client records are lodged after
+              LOS completion and loan accounts are managed.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- USER TYPES -->
+    <section id="users">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">§ 10 — User Types &amp; Partner Model</span>
+          <h2>Roles &amp; Affiliate Structure</h2>
+        </div>
+
+        <div class="grid-2">
+          <!-- User Classifications -->
+          <div>
+            <h3 style="margin-bottom: 1rem">§ 10.1 User Classifications</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem">
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 36px;
+                      height: 36px;
+                      background: rgba(79, 110, 247, 0.15);
+                      border-radius: 8px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 18px;
+                      flex-shrink: 0;
+                    "
+                  >
+                    🏢
+                  </div>
+                  <div>
+                    <h4 style="font-size: 14px; margin-bottom: 4px">Partner</h4>
+                    <p style="font-size: 13px; color: var(--muted2)">
+                      An affiliate or business entity that refers customers to
+                      Volt Money via the affiliate system.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 36px;
+                      height: 36px;
+                      background: rgba(6, 214, 160, 0.12);
+                      border-radius: 8px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 18px;
+                      flex-shrink: 0;
+                    "
+                  >
+                    👤
+                  </div>
+                  <div>
+                    <h4 style="font-size: 14px; margin-bottom: 4px">
+                      Borrower
+                    </h4>
+                    <p style="font-size: 13px; color: var(--muted2)">
+                      Any user who has an active or in-progress loan
+                      application.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="alert" style="margin-top: 0">
+                <span class="alert-icon">ℹ️</span>
+                <div style="color: var(--muted2)">
+                  A user can be both a
+                  <strong style="color: var(--text)">partner</strong> and a
+                  <strong style="color: var(--text)">borrower</strong> at the
+                  same time.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Partner Model -->
+          <div>
+            <h3 style="margin-bottom: 1rem">§ 10.2 Partner Affiliate Model</h3>
+            <p
+              style="
+                font-size: 13.5px;
+                color: var(--muted2);
+                margin-bottom: 1.25rem;
+              "
+            >
+              Partners direct customers to Volt Money and are tracked through a
+              sourcing channel attribute on the lead record. The origination
+              flow is identical for partner-referred customers, but the lead
+              carries the partner's sourcing channel identifier, enabling
+              attribution and commission tracking.
+            </p>
+
+            <!-- Mini flow SVG -->
+            <div class="arch-diagram" style="padding: 1.25rem">
+              <svg
+                viewBox="0 0 480 100"
+                xmlns="http://www.w3.org/2000/svg"
+                font-family="'Sora',sans-serif"
+              >
+                <defs>
+                  <marker
+                    id="a3"
+                    markerWidth="6"
+                    markerHeight="6"
+                    refX="6"
+                    refY="3"
+                    orient="auto"
+                  >
+                    <path d="M0,0 L6,3 L0,6 Z" fill="#1e2340" />
+                  </marker>
+                </defs>
+                <rect
+                  x="10"
+                  y="25"
+                  width="100"
+                  height="50"
+                  rx="8"
+                  fill="#0f1120"
+                  stroke="#06d6a0"
+                  stroke-width="1.5"
+                />
+                <text
+                  x="60"
+                  y="53"
+                  text-anchor="middle"
+                  fill="#06d6a0"
+                  font-size="12"
+                  font-weight="600"
+                >
+                  Partner
+                </text>
+
+                <path
+                  d="M112 50 L148 50"
+                  stroke="#1e2340"
+                  stroke-width="1.5"
+                  marker-end="url(#a3)"
+                />
+                <text
+                  x="130"
+                  y="44"
+                  text-anchor="middle"
+                  fill="#4b5563"
+                  font-size="9"
+                >
+                  refers
+                </text>
+
+                <rect
+                  x="150"
+                  y="25"
+                  width="100"
+                  height="50"
+                  rx="8"
+                  fill="#0f1120"
+                  stroke="#1e2340"
+                  stroke-width="1.5"
+                />
+                <text
+                  x="200"
+                  y="53"
+                  text-anchor="middle"
+                  fill="#9ca3af"
+                  font-size="12"
+                  font-weight="600"
+                >
+                  Customer
+                </text>
+
+                <path
+                  d="M252 50 L288 50"
+                  stroke="#1e2340"
+                  stroke-width="1.5"
+                  marker-end="url(#a3)"
+                />
+                <text
+                  x="270"
+                  y="44"
+                  text-anchor="middle"
+                  fill="#4b5563"
+                  font-size="9"
+                >
+                  applies
+                </text>
+
+                <rect
+                  x="290"
+                  y="10"
+                  width="120"
+                  height="80"
+                  rx="8"
+                  fill="#131629"
+                  stroke="#4f6ef7"
+                  stroke-width="1.5"
+                />
+                <text
+                  x="350"
+                  y="44"
+                  text-anchor="middle"
+                  fill="#818cf8"
+                  font-size="11"
+                  font-weight="600"
+                >
+                  Volt Money LOS
+                </text>
+                <text
+                  x="350"
+                  y="60"
+                  text-anchor="middle"
+                  fill="#4b5563"
+                  font-size="9"
+                >
+                  sourcing channel
+                </text>
+                <text
+                  x="350"
+                  y="72"
+                  text-anchor="middle"
+                  fill="#4b5563"
+                  font-size="9"
+                >
+                  tracked on lead
+                </text>
+
+                <path
+                  d="M412 50 L435 50"
+                  stroke="#1e2340"
+                  stroke-width="1.5"
+                  marker-end="url(#a3)"
+                />
+                <rect
+                  x="437"
+                  y="25"
+                  width="36"
+                  height="50"
+                  rx="8"
+                  fill="#0f1120"
+                  stroke="#1e2340"
+                  stroke-width="1.5"
+                />
+                <text
+                  x="455"
+                  y="48"
+                  text-anchor="middle"
+                  fill="#9ca3af"
+                  font-size="9"
+                >
+                  Attr.
+                </text>
+                <text
+                  x="455"
+                  y="62"
+                  text-anchor="middle"
+                  fill="#9ca3af"
+                  font-size="9"
+                >
+                  +Comm.
+                </text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container">
+        <p>
+          <strong
+            >Volt Money — Loan Against Mutual Funds &amp; Securities</strong
+          >
+        </p>
+        <p style="margin-top: 8px">
+          Loan Onboarding Service (LOS) — Technical Specification | Scope: LOS
+          Only
+        </p>
+        <p style="margin-top: 6px; font-size: 11px">
+          Confidential | Internal Use Only · LMS (Loan Management Service)
+          documentation to follow.
+        </p>
+      </div>
+    </footer>
+  </body>
 </html>
